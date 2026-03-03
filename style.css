@@ -1,7 +1,12 @@
+/* --- Base Styles & Typography --- */
 .font-display { font-family: 'Playfair Display', Georgia, serif }
 body { font-family: 'DM Sans', system-ui, sans-serif }
+
+/* --- Scrollbar Management --- */
 .no-scrollbar::-webkit-scrollbar { display: none }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none }
+
+/* --- Splash & Animations --- */
 #splash { transition: opacity .5s ease }
 .splash-logo { animation: sfi .8s ease forwards }
 
@@ -9,12 +14,14 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
     from { opacity: 0; transform: translateY(20px) } 
     to { opacity: 1; transform: translateY(0) } 
 }
+
 .view { animation: vi .3s ease forwards }
 @keyframes vi { 
     from { opacity: 0; transform: translateY(8px) } 
     to { opacity: 1; transform: translateY(0) } 
 }
 
+/* --- Filters & Navigation Pills --- */
 .filter-pill { flex-shrink: 0; padding: 6px 16px; border-radius: 999px; border: 1.5px solid #E0E0E0; background: white; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: #555; cursor: pointer; transition: all .2s }
 .filter-pill:hover { border-color: #1D6FE8; color: #1D6FE8 }
 .filter-pill.active-pill { background: #1D6FE8; border-color: #1D6FE8; color: white }
@@ -22,10 +29,12 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 .cat-pill { flex-shrink: 0; padding: 6px 16px; border-radius: 999px; border: 1.5px solid #E0E0E0; background: white; font-size: 12px; font-weight: 600; color: #555; cursor: pointer; transition: all .2s }
 .cat-pill.active-cat { background: #1D6FE8; border-color: #1D6FE8; color: white }
 
+/* --- Hero Backgrounds --- */
 .hero-bg { background: url('https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80') center/cover no-repeat }
 .hero-bg2 { background: url('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80') center/cover no-repeat }
 
-.dish-card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); cursor: pointer; transition: transform .2s, box-shadow .2s }
+/* --- Dish Cards (Home View) --- */
+.dish-card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); cursor: pointer; transition: transform .2s, box-shadow .2s; position: relative; }
 .dish-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.1) }
 .dish-img { width: 100%; height: 120px; background: #f0ebe0; display: flex; align-items: center; justify-content: center; font-size: 40px }
 .dish-info { padding: 10px 12px 12px }
@@ -35,6 +44,7 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 .add-btn:active { transform: scale(.9) }
 .bsb { position: absolute; top: 8px; left: 8px; background: #F5A623; color: #0D0D0D; font-size: 9px; font-weight: 800; letter-spacing: .06em; padding: 3px 7px; border-radius: 999px }
 
+/* --- Menu Items (List View) --- */
 .menu-item { background: white; border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; box-shadow: 0 1px 8px rgba(0,0,0,.05); cursor: pointer }
 .menu-img { width: 64px; height: 64px; border-radius: 12px; background: #f0ebe0; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0 }
 .menu-info { flex: 1; min-width: 0 }
@@ -45,11 +55,12 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 .menu-add { width: 32px; height: 32px; border-radius: 10px; border: 1.5px solid #E0EBFF; background: white; color: #1D6FE8; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0 }
 .menu-add:hover { background: #EEF3FD }
 
-/* DISH DETAIL SPECIFIC */
+/* --- Dish Detail Specific --- */
 #view-item-detail.active ~ nav { display: none; }
 #detail-img { transition: transform 0.5s ease; }
 #view-item-detail textarea:focus { outline: none; border-color: #1D6FE8; }
 
+/* --- Cart Styles --- */
 .cart-item { background: white; border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; box-shadow: 0 1px 8px rgba(0,0,0,.05) }
 .cart-img { width: 64px; height: 64px; border-radius: 12px; background: #f0ebe0; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0 }
 .cart-info { flex: 1; min-width: 0 }
@@ -59,11 +70,15 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #E0E0E0; background: white; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer }
 .qty-btn.plus { background: #1D6FE8; border-color: #1D6FE8; color: white }
 .qty-val { font-size: 15px; font-weight: 600; color: #0D0D0D; min-width: 16px; text-align: center }
+
+/* --- Navigation & UI Elements --- */
 .nav-btn { color: #AAA; transition: color .2s; background: none; border: none; cursor: pointer }
 .nav-btn.active-nav { color: #1D6FE8 }
 .srow { display: flex; align-items: center; padding: 14px 16px; cursor: pointer }
 .srow:hover { background: #FAFAFA }
-.map-ph { background: linear-gradient(135deg, #C8E6C9, #81C784); position: relative }
+.map-ph { background: linear-gradient(135deg, #C8E6C9, #81C784); position: relative; border-radius: 12px; height: 144px; overflow: hidden; }
 .map-ph::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 40%, rgba(255,255,255,.3) 0%, transparent 60%) }
+
+/* --- Empty States --- */
 .ecart { display: flex; flex-direction: column; align-items: center; padding: 60px 20px; color: #CCC; text-align: center }
 .ecart p { margin-top: 12px; font-size: 14px }
