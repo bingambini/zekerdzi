@@ -4,37 +4,89 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZEKERDZI — Modern Tbilisi Kitchen</title>
-  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    .font-display{font-family:'Playfair Display',Georgia,serif}
+    body{font-family:'DM Sans',system-ui,sans-serif}
+    .no-scrollbar::-webkit-scrollbar{display:none}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+    #splash{transition:opacity .5s ease}
+    .splash-logo{animation:sfi .8s ease forwards}
+    @keyframes sfi{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .view{animation:vi .3s ease forwards}
+    @keyframes vi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .filter-pill{flex-shrink:0;padding:6px 16px;border-radius:999px;border:1.5px solid #E0E0E0;background:white;font-size:11px;font-weight:700;letter-spacing:.08em;color:#555;cursor:pointer;transition:all .2s}
+    .filter-pill:hover{border-color:#1D6FE8;color:#1D6FE8}
+    .filter-pill.active-pill{background:#1D6FE8;border-color:#1D6FE8;color:white}
+    .cat-pill{flex-shrink:0;padding:6px 16px;border-radius:999px;border:1.5px solid #E0E0E0;background:white;font-size:12px;font-weight:600;color:#555;cursor:pointer;transition:all .2s}
+    .cat-pill.active-cat{background:#1D6FE8;border-color:#1D6FE8;color:white}
+    .hero-bg{background:url('https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80') center/cover no-repeat}
+    .hero-bg2{background:url('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80') center/cover no-repeat}
+    .dish-card{background:white;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);cursor:pointer;transition:transform .2s,box-shadow .2s}
+    .dish-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+    .dish-img{width:100%;height:120px;background:#f0ebe0;display:flex;align-items:center;justify-content:center;font-size:40px}
+    .dish-info{padding:10px 12px 12px}
+    .dish-name{font-size:13px;font-weight:600;color:#0D0D0D;line-height:1.3}
+    .dish-price{color:#1D6FE8;font-size:13px;font-weight:700;margin-top:4px}
+    .add-btn{width:28px;height:28px;border-radius:8px;background:#1D6FE8;color:white;font-size:18px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-top:8px;cursor:pointer;border:none;transition:transform .1s}
+    .add-btn:active{transform:scale(.9)}
+    .bsb{position:absolute;top:8px;left:8px;background:#F5A623;color:#0D0D0D;font-size:9px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:999px}
+    .menu-item{background:white;border-radius:16px;display:flex;align-items:center;gap:12px;padding:12px;box-shadow:0 1px 8px rgba(0,0,0,.05)}
+    .menu-img{width:64px;height:64px;border-radius:12px;background:#f0ebe0;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+    .menu-info{flex:1;min-width:0}
+    .menu-name{font-size:14px;font-weight:600;color:#0D0D0D}
+    .menu-ka{font-size:11px;color:#888;margin-top:1px}
+    .menu-desc{font-size:11px;color:#AAA;font-style:italic;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .menu-price{color:#1D6FE8;font-weight:700;font-size:13px;display:block;margin-top:6px}
+    .menu-add{width:32px;height:32px;border-radius:10px;border:1.5px solid #E0EBFF;background:white;color:#1D6FE8;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+    .menu-add:hover{background:#EEF3FD}
+    .cart-item{background:white;border-radius:16px;display:flex;align-items:center;gap:12px;padding:12px;box-shadow:0 1px 8px rgba(0,0,0,.05)}
+    .cart-img{width:64px;height:64px;border-radius:12px;background:#f0ebe0;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+    .cart-info{flex:1;min-width:0}
+    .cart-name{font-size:14px;font-weight:600;color:#0D0D0D}
+    .cart-price{font-size:13px;color:#1D6FE8;font-weight:700;margin-top:2px}
+    .qty-controls{display:flex;align-items:center;gap:10px;margin-top:8px}
+    .qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #E0E0E0;background:white;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .qty-btn.plus{background:#1D6FE8;border-color:#1D6FE8;color:white}
+    .qty-val{font-size:15px;font-weight:600;color:#0D0D0D;min-width:16px;text-align:center}
+    .nav-btn{color:#AAA;transition:color .2s;background:none;border:none;cursor:pointer}
+    .nav-btn.active-nav{color:#1D6FE8}
+    .srow{display:flex;align-items:center;padding:14px 16px;cursor:pointer}
+    .srow:hover{background:#FAFAFA}
+    .map-ph{background:linear-gradient(135deg,#C8E6C9,#81C784);position:relative}
+    .map-ph::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(255,255,255,.3) 0%,transparent 60%)}
+    .ecart{display:flex;flex-direction:column;align-items:center;padding:60px 20px;color:#CCC;text-align:center}
+    .ecart p{margin-top:12px;font-size:14px}
+  </style>
 </head>
-<body class="bg-[#F5F3EF] min-h-screen font-sans">
+<body class="bg-[#F5F3EF] min-h-screen">
 
-  <!-- SPLASH SCREEN -->
+  <!-- SPLASH -->
   <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D0D0D]">
     <div class="splash-logo mb-6">
       <div class="w-28 h-28 rounded-2xl bg-[#1A1A1A] flex items-center justify-center border border-[#2A2A2A] shadow-2xl mb-6 mx-auto">
         <span class="text-[#C9A84C] text-3xl font-display font-bold">Z</span>
       </div>
       <h1 class="text-white text-4xl font-display font-black tracking-widest text-center">ZEKERDZI</h1>
-      <p class="text-[#C9A84C] text-xs tracking-[0.35em] text-center mt-1 uppercase">Modern Tbilisi Kitchen</p>
+      <p class="text-[#C9A84C] text-xs tracking-[.35em] text-center mt-1 uppercase">Modern Tbilisi Kitchen</p>
     </div>
     <div class="w-64 mt-12">
       <p class="text-[#555] text-xs uppercase tracking-widest mb-3">Initialising</p>
       <p class="text-white text-sm mb-3">Preparing your table...</p>
       <div class="h-1 bg-[#222] rounded-full overflow-hidden">
-        <div id="splash-bar" class="h-full bg-[#1D6FE8] rounded-full transition-all duration-300" style="width:0%"></div>
+        <div id="splash-bar" class="h-full bg-[#1D6FE8] rounded-full" style="width:0%;transition:width .05s linear"></div>
       </div>
       <p id="splash-pct" class="text-[#1D6FE8] text-xs text-right mt-1">0%</p>
     </div>
   </div>
 
-  <!-- APP SHELL -->
+  <!-- APP -->
   <div id="app" class="hidden max-w-sm mx-auto min-h-screen flex flex-col relative pb-20">
 
-    <!-- HOME / POPULAR DISHES VIEW -->
+    <!-- HOME -->
     <div id="view-home" class="view active">
       <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
         <div class="flex items-center justify-between">
@@ -43,7 +95,7 @@
             <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Popular Dishes</h2>
           </div>
           <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm">
-            <svg class="w-5 h-5 text-[#0D0D0D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
           </button>
         </div>
         <div class="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
@@ -53,8 +105,6 @@
           <button data-filter="grilled" class="filter-pill">GRILLED</button>
         </div>
       </div>
-
-      <!-- Hero Banner -->
       <div class="mx-5 mt-2 rounded-2xl overflow-hidden relative h-44 bg-[#1a1a1a] shadow-lg">
         <div class="absolute inset-0 bg-gradient-to-tr from-[#0D0D0D] via-transparent to-transparent z-10"></div>
         <div class="hero-bg absolute inset-0 opacity-60"></div>
@@ -64,11 +114,10 @@
           <p class="text-white/70 text-xs">Experience the true taste of Georgia</p>
         </div>
       </div>
-
-      <div id="dishes-grid" class="grid grid-cols-2 gap-3 px-5 mt-5"></div>
+      <div id="dishes-grid" class="grid grid-cols-2 gap-3 px-5 mt-5 pb-4"></div>
     </div>
 
-    <!-- MENU VIEW -->
+    <!-- MENU -->
     <div id="view-menu" class="view hidden">
       <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
         <div class="flex items-center justify-between">
@@ -85,4 +134,320 @@
         <div class="flex gap-2 mt-3 overflow-x-auto no-scrollbar">
           <button data-cat="traditional" class="cat-pill active-cat">Traditional</button>
           <button data-cat="grilled" class="cat-pill">Grilled</button>
-          <but
+          <button data-cat="salads" class="cat-pill">Salads</button>
+          <button data-cat="drinks" class="cat-pill">Drinks</button>
+        </div>
+      </div>
+      <div id="menu-list" class="px-5 pb-4 space-y-3"></div>
+    </div>
+
+    <!-- CART -->
+    <div id="view-cart" class="view hidden">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
+        <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">Your Cart</h2>
+        <button onclick="clearCart()" class="text-[#1D6FE8] text-sm font-medium" style="background:none;border:none;cursor:pointer">Clear</button>
+      </div>
+      <div class="mx-5 mt-2 flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm">
+        <div class="w-10 h-10 bg-[#EEF3FD] rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-[#1D6FE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18M3 9h18M3 15h18M3 21h18"/></svg>
+        </div>
+        <div><p class="font-semibold text-[#0D0D0D] text-sm">Zekerdzi Tbilisi</p><p class="text-xs text-[#888]">Estimated delivery: 25–35 min</p></div>
+      </div>
+      <div id="cart-items" class="px-5 mt-4 space-y-3"></div>
+      <div class="mx-5 mt-5 bg-white rounded-2xl px-5 py-4 shadow-sm">
+        <h3 class="font-display font-bold text-[#0D0D0D] mb-4">Summary</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between text-[#555]"><span>Subtotal</span><span id="summary-subtotal">₾0.00</span></div>
+          <div class="flex justify-between text-[#555]"><span>Delivery Fee</span><span>₾2.50</span></div>
+          <div class="flex justify-between text-[#555]"><span>Service Fee</span><span>₾1.00</span></div>
+          <div class="border-t border-dashed border-[#EEE] pt-3 mt-1 flex justify-between font-bold text-[#0D0D0D] text-base">
+            <span>Total</span><span id="summary-total" class="text-[#1D6FE8]">₾0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="px-5 mt-6 pb-4">
+        <button class="w-full bg-[#1D6FE8] text-white rounded-2xl py-4 flex items-center justify-between px-5 shadow-lg font-semibold" style="border:none;cursor:pointer">
+          <span>Go to Checkout</span>
+          <span id="checkout-total" class="bg-white/20 px-3 py-1 rounded-xl text-sm">₾0.00</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div id="view-orders" class="view hidden">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
+        <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
+        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">Order History</h2>
+        <div class="w-9"></div>
+      </div>
+      <div class="mx-5 mt-2 bg-white rounded-xl p-1 flex shadow-sm">
+        <button class="flex-1 py-2 text-sm rounded-lg bg-white shadow text-[#1D6FE8] font-semibold">Current</button>
+        <button class="flex-1 py-2 text-sm text-[#888]">Past</button>
+      </div>
+      <div class="mx-5 mt-5">
+        <p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3">Ongoing Orders</p>
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div class="px-4 pt-4">
+            <span class="text-[#1D6FE8] text-xs font-bold uppercase tracking-wider">In Progress</span>
+            <div class="flex items-center justify-between mt-1">
+              <div><p class="font-bold text-[#0D0D0D]">Order #8821</p><p class="text-xs text-[#888]">Today, 14:20 · 3 items</p></div>
+              <div class="w-10 h-10 bg-[#EEF3FD] rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-[#1D6FE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18M3 9h18M3 15h18M3 21h18"/></svg></div>
+            </div>
+          </div>
+          <div class="map-ph mx-4 mt-3 rounded-xl overflow-hidden relative h-36">
+            <div class="absolute bottom-3 left-3 bg-white rounded-lg px-3 py-1.5 shadow text-xs font-medium flex items-center gap-1.5">
+              <span class="w-2 h-2 bg-green-500 rounded-full inline-block"></span> Preparing your meal
+            </div>
+          </div>
+          <div class="px-4 py-4">
+            <button class="w-full bg-[#1D6FE8] text-white rounded-xl py-3 text-sm font-semibold flex items-center justify-center gap-2" style="border:none;cursor:pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+              Track Delivery
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mx-5 mt-5 mb-4">
+        <p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3">Recent History</p>
+        <div class="space-y-3">
+          <div class="bg-white rounded-2xl px-4 py-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div><p class="font-bold text-[#0D0D0D]">Order #8754</p><p class="text-xs text-[#888]">Oct 12, 19:45 · Delivered</p></div>
+              <div class="text-right"><p class="font-semibold text-[#0D0D0D]">₾42.50</p><p class="text-xs text-[#888]">Apple Pay</p></div>
+            </div>
+            <p class="text-sm text-[#555] mt-2">Khinkali, Khachapuri...</p>
+            <div class="flex gap-2 mt-3">
+              <button class="flex-1 border border-[#EEE] rounded-xl py-2 text-sm text-[#333] font-medium">Get Receipt</button>
+              <button class="flex-1 bg-[#EEF3FD] rounded-xl py-2 text-sm text-[#1D6FE8] font-semibold flex items-center justify-center gap-1" style="border:none;cursor:pointer">Reorder</button>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl px-4 py-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div><p class="font-bold text-[#0D0D0D]">Order #8612</p><p class="text-xs text-[#888]">Oct 08, 20:15 · Delivered</p></div>
+              <div class="text-right"><p class="font-semibold text-[#0D0D0D]">₾28.00</p><p class="text-xs text-[#888]">Cash</p></div>
+            </div>
+            <p class="text-sm text-[#555] mt-2">Glekhuri Salad, Mtsvadi</p>
+            <div class="flex gap-2 mt-3">
+              <button class="flex-1 border border-[#EEE] rounded-xl py-2 text-sm text-[#333] font-medium">Get Receipt</button>
+              <button class="flex-1 bg-[#EEF3FD] rounded-xl py-2 text-sm text-[#1D6FE8] font-semibold flex items-center justify-center gap-1" style="border:none;cursor:pointer">Reorder</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="view-profile" class="view hidden">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
+        <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
+        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">Profile</h2>
+        <button class="w-9 h-9 flex items-center justify-center" style="background:none;border:none"><svg class="w-5 h-5 text-[#555]" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button>
+      </div>
+      <div class="flex flex-col items-center mt-4 px-5 pb-6">
+        <div class="relative">
+          <div class="w-24 h-24 rounded-full bg-[#F5A623] flex items-center justify-center text-5xl shadow-lg">👨</div>
+          <button class="absolute bottom-0 right-0 w-7 h-7 bg-[#1D6FE8] rounded-full flex items-center justify-center shadow" style="border:none;cursor:pointer"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+        </div>
+        <h3 class="font-display font-bold text-xl text-[#0D0D0D] mt-3">Alex Richards</h3>
+        <p class="text-[#888] text-sm">+995 555 123 456</p>
+        <p class="text-[#AAA] text-xs mt-0.5">Tbilisi, Georgia</p>
+        <div class="w-full bg-white rounded-2xl mt-5 flex divide-x divide-[#F0F0F0] shadow-sm">
+          <div class="flex-1 py-4 flex flex-col items-center"><span class="text-[#1D6FE8] text-xl font-bold">12</span><span class="text-[#888] text-xs mt-0.5">Orders</span></div>
+          <div class="flex-1 py-4 flex flex-col items-center"><span class="text-[#1D6FE8] text-xl font-bold">450</span><span class="text-[#888] text-xs mt-0.5">Points</span></div>
+          <div class="flex-1 py-4 flex flex-col items-center"><span class="text-[#1D6FE8] text-xl font-bold">3</span><span class="text-[#888] text-xs mt-0.5">Coupons</span></div>
+        </div>
+        <div class="w-full mt-5">
+          <p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-2">Account Settings</p>
+          <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div class="srow border-b border-[#F5F5F5]"><div class="w-9 h-9 bg-[#EEF3FD] rounded-xl flex items-center justify-center"><svg class="w-4 h-4 text-[#1D6FE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div><span class="flex-1 ml-3 text-[#0D0D0D] font-medium">Saved Addresses</span><svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+            <div class="srow border-b border-[#F5F5F5]"><div class="w-9 h-9 bg-[#EEF3FD] rounded-xl flex items-center justify-center"><svg class="w-4 h-4 text-[#1D6FE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><path d="M2 10h20"/></svg></div><span class="flex-1 ml-3 text-[#0D0D0D] font-medium">Payment Methods</span><svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+            <div class="srow border-b border-[#F5F5F5]"><div class="w-9 h-9 bg-[#EEF3FD] rounded-xl flex items-center justify-center"><svg class="w-4 h-4 text-[#1D6FE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><span class="flex-1 ml-3 text-[#0D0D0D] font-medium">Help &amp; Support</span><svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+            <div class="srow"><div class="w-9 h-9 bg-[#EEF3FD] rounded-xl flex items-center justify-center"><svg class="w-4 h-4 text-[#1D6FE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><span class="flex-1 ml-3 text-[#0D0D0D] font-medium">Settings</span><svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+          </div>
+        </div>
+        <button class="mt-5 text-[#E53935] flex items-center gap-2 font-semibold" style="background:none;border:none;cursor:pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Sign Out
+        </button>
+        <p class="text-[#CCC] text-xs mt-4">Version 2.4.1 (Build 108)</p>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-white border-t border-[#F0F0F0] flex z-20 shadow-lg">
+      <button data-nav="home" class="nav-btn active-nav flex-1 flex flex-col items-center py-3 gap-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg><span class="text-[10px] uppercase tracking-wider font-semibold">Home</span></button>
+      <button data-nav="menu" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg><span class="text-[10px] uppercase tracking-wider font-semibold">Menu</span></button>
+      <button data-nav="cart" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1"><div class="relative"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg><span id="nav-cart-badge" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#1D6FE8] text-white text-[9px] font-bold rounded-full flex items-center justify-center"></span></div><span class="text-[10px] uppercase tracking-wider font-semibold">Cart</span></button>
+      <button data-nav="orders" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><span class="text-[10px] uppercase tracking-wider font-semibold">Orders</span></button>
+      <button data-nav="profile" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg><span class="text-[10px] uppercase tracking-wider font-semibold">Profile</span></button>
+    </nav>
+  </div>
+
+  <script>
+    var dishes=[
+      {id:1,name:"Adjaruli Khachapuri",ka:"აჭარული ხაჭაპური",desc:"Cheese bread with egg yolk and butter",price:14.00,emoji:"🍳",cat:"khachapuri",bs:true},
+      {id:2,name:"Shish Kebab Mixed",  ka:"შიშ-ქებაბი შერეული",desc:"Grilled mixed meat skewers",          price:28.50,emoji:"🍢",cat:"grilled",   bs:true},
+      {id:3,name:"Walnut Pkhali Trio", ka:"თხილის ფხალი",     desc:"Spinach, beet and bean pkhali",        price:12.00,emoji:"🥗",cat:"salads",    bs:false},
+      {id:4,name:"Creamy Shkmeruli",   ka:"შქმერული",          desc:"Roasted chicken in garlic cream sauce",price:19.50,emoji:"🍗",cat:"traditional",bs:true},
+      {id:5,name:"Pork Ojakhuri",      ka:"ოჯახური",           desc:"Pan-fried pork with potatoes",         price:16.00,emoji:"🥩",cat:"grilled",   bs:false},
+      {id:6,name:"Lobio in Pot",       ka:"ლობიო ქოთანში",     desc:"Spiced kidney beans in clay pot",      price:11.00,emoji:"🫘",cat:"traditional",bs:false}
+    ];
+    var menu=[
+      {id:7, name:"Khinkali (Kalakuri)",    ka:"ხინკალი ქალაქური",    desc:"Meat, herbs, and juicy broth",          price:2.00, emoji:"🥟",cat:"traditional"},
+      {id:8, name:"Adjaruli Khachapuri",    ka:"აჭარული ხაჭაპური",    desc:"Cheese bread with egg yolk and butter", price:15.50,emoji:"🍳",cat:"traditional"},
+      {id:9, name:"Badrijani Nigvzit",      ka:"ბადრიჯანი ნიგვზით",   desc:"Fried eggplant with walnut paste",      price:12.00,emoji:"🍆",cat:"traditional"},
+      {id:10,name:"Pork Mtsvadi",           ka:"ღორის მწვადი",         desc:"Tender pork grilled over vine wood",    price:18.00,emoji:"🍖",cat:"grilled"},
+      {id:11,name:"Chicken Tabaka",         ka:"წიწილა ტაბაკა",        desc:"Crispy pressed whole chicken",          price:22.00,emoji:"🍗",cat:"grilled"},
+      {id:12,name:"Tomato & Cucumber Salad",ka:"პომიდვრის სალათი",     desc:"Fresh summer salad",                    price:8.00, emoji:"🥗",cat:"salads"},
+      {id:13,name:"Glekhuri Salad",         ka:"გლეხური სალათი",       desc:"Village-style fresh vegetables",        price:9.00, emoji:"🥙",cat:"salads"},
+      {id:14,name:"Homemade Lemonade",      ka:"სახლის ლიმონათი",      desc:"Fresh-squeezed citrus lemonade",        price:6.00, emoji:"🍋",cat:"drinks"},
+      {id:15,name:"House Red Wine",         ka:"სახლის წითელი ღვინო",  desc:"Georgian Saperavi wine (200ml)",        price:8.50, emoji:"🍷",cat:"drinks"}
+    ];
+    var cart={}, prevView='home', curView='home';
+
+    /* SPLASH — 3 წამი */
+    (function(){
+      var bar=document.getElementById('splash-bar');
+      var pct=document.getElementById('splash-pct');
+      var step=0, steps=60, iv=setInterval(function(){
+        step++;
+        var p=Math.round(step/steps*100);
+        bar.style.width=p+'%';
+        pct.textContent=p+'%';
+        if(step>=steps){
+          clearInterval(iv);
+          var s=document.getElementById('splash');
+          s.style.opacity='0';
+          s.style.pointerEvents='none';
+          setTimeout(function(){
+            s.style.display='none';
+            document.getElementById('app').classList.remove('hidden');
+            renderHome('all');
+          },500);
+        }
+      },50); // 50ms * 60 = 3000ms
+    })();
+
+    /* NAV */
+    function showView(n){
+      prevView=curView; curView=n;
+      document.querySelectorAll('.view').forEach(function(v){v.classList.add('hidden');v.classList.remove('active');});
+      var t=document.getElementById('view-'+n);
+      if(t){t.classList.remove('hidden');t.classList.add('active');t.scrollTop=0;}
+      document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.toggle('active-nav',b.dataset.nav===n);});
+      if(n==='cart') renderCart();
+      if(n==='menu') renderMenu(null);
+    }
+    function goBack(){showView(prevView||'home');}
+    function goToCart(){showView('cart');}
+
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.addEventListener('click',function(){showView(b.dataset.nav);});});
+    document.querySelectorAll('.filter-pill').forEach(function(p){p.addEventListener('click',function(){
+      document.querySelectorAll('.filter-pill').forEach(function(x){x.classList.remove('active-pill');});
+      p.classList.add('active-pill'); renderHome(p.dataset.filter);
+    });});
+    document.querySelectorAll('.cat-pill').forEach(function(p){p.addEventListener('click',function(){
+      document.querySelectorAll('.cat-pill').forEach(function(x){x.classList.remove('active-cat');});
+      p.classList.add('active-cat'); renderMenu(p.dataset.cat);
+    });});
+    document.getElementById('menu-search').addEventListener('input',function(e){
+      var q=e.target.value.toLowerCase();
+      renderMenuItems(menu.filter(function(i){return i.name.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q);}));
+    });
+
+    /* RENDER HOME */
+    function renderHome(f){
+      var list=f==='all'?dishes:dishes.filter(function(d){return d.cat===f;});
+      document.getElementById('dishes-grid').innerHTML=list.map(function(d){
+        return '<div class="dish-card" onclick="addToCart('+d.id+')">'+
+          '<div style="position:relative">'+
+            '<div class="dish-img">'+d.emoji+'</div>'+
+            (d.bs?'<span class="bsb">BEST SELLER</span>':'')+
+            '<button style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,.9);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px" onclick="event.stopPropagation()">♡</button>'+
+          '</div>'+
+          '<div class="dish-info">'+
+            '<p class="dish-name">'+d.name+'</p>'+
+            '<p class="dish-price">₾'+d.price.toFixed(2)+'</p>'+
+            '<button class="add-btn" onclick="event.stopPropagation();addToCart('+d.id+')">+</button>'+
+          '</div></div>';
+      }).join('');
+    }
+
+    /* RENDER MENU */
+    function renderMenu(cat){
+      var ap=document.querySelector('.cat-pill.active-cat');
+      cat=cat||(ap?ap.dataset.cat:'traditional');
+      renderMenuItems(menu.filter(function(i){return i.cat===cat;}));
+    }
+    function renderMenuItems(items){
+      var el=document.getElementById('menu-list');
+      if(!items.length){el.innerHTML='<p style="text-align:center;color:#AAA;padding:40px;font-size:14px">No dishes found</p>';return;}
+      el.innerHTML=items.map(function(i){
+        return '<div class="menu-item">'+
+          '<div class="menu-img">'+i.emoji+'</div>'+
+          '<div class="menu-info">'+
+            '<p class="menu-name">'+i.name+'</p>'+
+            '<p class="menu-ka">'+i.ka+'</p>'+
+            '<p class="menu-desc">'+i.desc+'</p>'+
+            '<span class="menu-price">₾'+i.price.toFixed(2)+'</span>'+
+          '</div>'+
+          '<button class="menu-add" onclick="addToCart('+i.id+')">+</button>'+
+        '</div>';
+      }).join('');
+    }
+
+    /* CART */
+    function getItem(id){return dishes.concat(menu).find(function(d){return d.id===id;});}
+    function addToCart(id){
+      var it=getItem(id); if(!it) return;
+      if(cart[id]) cart[id].qty++; else cart[id]=Object.assign({},it,{qty:1});
+      badge();
+    }
+    function removeFromCart(id){
+      if(!cart[id]) return;
+      cart[id].qty--;
+      if(cart[id].qty<=0) delete cart[id];
+      badge(); renderCart();
+    }
+    function clearCart(){cart={};badge();renderCart();}
+    function badge(){
+      var t=Object.values(cart).reduce(function(s,i){return s+i.qty;},0);
+      ['nav-cart-badge','menu-cart-badge'].forEach(function(id){
+        var el=document.getElementById(id); if(!el) return;
+        if(t>0){el.textContent=t;el.classList.remove('hidden');}else el.classList.add('hidden');
+      });
+    }
+    function renderCart(){
+      var c=document.getElementById('cart-items');
+      var items=Object.values(cart);
+      if(!items.length){
+        c.innerHTML='<div class="ecart"><div style="font-size:48px">🛒</div><p>Your cart is empty</p>'+
+          '<button onclick="showView(\'menu\')" style="margin-top:16px;background:#1D6FE8;color:white;border:none;border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">Browse Menu</button></div>';
+        setSummary(0); return;
+      }
+      c.innerHTML=items.map(function(i){
+        return '<div class="cart-item">'+
+          '<div class="cart-img">'+i.emoji+'</div>'+
+          '<div class="cart-info">'+
+            '<p class="cart-name">'+i.name+'</p>'+
+            '<p class="cart-price">₾'+i.price.toFixed(2)+'</p>'+
+            '<div class="qty-controls">'+
+              '<button class="qty-btn" onclick="removeFromCart('+i.id+')">−</button>'+
+              '<span class="qty-val">'+i.qty+'</span>'+
+              '<button class="qty-btn plus" onclick="addToCart('+i.id+');renderCart()">+</button>'+
+            '</div></div></div>';
+      }).join('');
+      setSummary(items.reduce(function(s,i){return s+i.price*i.qty;},0));
+    }
+    function setSummary(sub){
+      var tot=sub+(sub>0?3.50:0);
+      document.getElementById('summary-subtotal').textContent='₾'+sub.toFixed(2);
+      document.getElementById('summary-total').textContent='₾'+tot.toFixed(2);
+      document.getElementById('checkout-total').textContent='₾'+tot.toFixed(2);
+    }
+  </script>
+</body>
+</html>
