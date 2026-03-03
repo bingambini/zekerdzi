@@ -30,6 +30,7 @@ async function fetchMenuData() {
 
         // საწყისი რენდერი მონაცემების ჩატვირთვის შემდეგ
         renderHome('all');
+        renderMenu(null); // ამატებს მენიუს რენდერს ჩატვირთვისას
     } catch (error) {
         console.error('Error fetching menu via Apps Script:', error);
     }
