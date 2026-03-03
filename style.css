@@ -29,7 +29,7 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 .cat-pill { flex-shrink: 0; padding: 6px 16px; border-radius: 999px; border: 1.5px solid #E0E0E0; background: white; font-size: 12px; font-weight: 600; color: #555; cursor: pointer; transition: all .2s }
 .cat-pill.active-cat { background: #1D6FE8; border-color: #1D6FE8; color: white }
 
-/* --- Pizza Draft Size Options (UPDATED) --- */
+/* --- Pizza Draft Size Options (UPDATED FOR CLARITY) --- */
 .size-pill {
     display: flex;
     align-items: center;
@@ -73,9 +73,25 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
     flex-direction: column;
 }
 
-.size-pill.active .size-name { color: #1D6FE8 }
-.size-name { font-weight: 800; font-size: 15px; color: #2D2D2D; letter-spacing: -0.02em; }
-.size-price { font-size: 11px; color: #999; font-weight: 600; margin-top: 1px; }
+.size-name { 
+    font-weight: 800; 
+    font-size: 15px; 
+    color: #0D0D0D; /* მკვეთრი შავი */
+    letter-spacing: -0.02em; 
+}
+
+.size-price { 
+    font-size: 12px; 
+    color: #2D2D2D; /* მკაფიო შავი */
+    font-weight: 700; /* სქელი შრიფტი */
+    margin-top: 2px; 
+}
+
+.size-pill.active .size-name,
+.size-pill.active .size-price { 
+    color: #1D6FE8; 
+}
+
 .size-pill:active { transform: scale(0.96) }
 
 /* --- Hero Backgrounds --- */
