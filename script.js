@@ -114,7 +114,7 @@ function showView(n) {
 
 function goBack() { showView(prevView || 'home'); }
 
-// --- დეტალური გვერდი ოფციებით (განახლებული ვერსია იკონკებით) ---
+// --- დეტალური გვერდი ოფციებით (ინჟინრული პიცის ნახაზით) ---
 function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
@@ -143,12 +143,16 @@ function openProductDetail(id) {
             const priceVal = parseFloat(priceAdd);
             
             const btn = document.createElement('div');
-            // ვიყენებთ "size-pill" კლასს ახალი დიზაინისთვის
             btn.className = `size-pill ${index === 0 ? 'active' : ''}`;
-            btn.setAttribute('data-size-label', cleanLabel);
 
+            // SVG "პიცის ნახაზი" - წრე და ნაჭრების ხაზები
             btn.innerHTML = `
-                <span class="size-icon">🍕</span>
+                <div class="pizza-draft-icon">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" stroke-width="4" stroke="currentColor"/>
+                        <path d="M50 5V95M5 50H95M18 18L82 82M82 18L18 82" stroke-width="3" stroke="currentColor" stroke-linecap="round"/>
+                    </svg>
+                </div>
                 <div class="size-info-block">
                     <span class="size-name">${cleanLabel}</span>
                     <span class="size-price">+₾${priceVal.toFixed(2)}</span>
