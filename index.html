@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZEKERDZI — Modern Tbilisi Kitchen</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-[#F5F3EF] min-h-screen font-sans">
 
+  <!-- SPLASH SCREEN -->
+  <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D0D0D]">
+    <div class="splash-logo mb-6">
+      <div class="w-28 h-28 rounded-2xl bg-[#1A1A1A] flex items-center justify-center border border-[#2A2A2A] shadow-2xl mb-6 mx-auto">
+        <span class="text-[#C9A84C] text-3xl font-display font-bold">Z</span>
+      </div>
+      <h1 class="text-white text-4xl font-display font-black tracking-widest text-center">ZEKERDZI</h1>
+      <p class="text-[#C9A84C] text-xs tracking-[0.35em] text-center mt-1 uppercase">Modern Tbilisi Kitchen</p>
+    </div>
+    <div class="w-64 mt-12">
+      <p class="text-[#555] text-xs uppercase tracking-widest mb-3">Initialising</p>
+      <p class="text-white text-sm mb-3">Preparing your table...</p>
+      <div class="h-1 bg-[#222] rounded-full overflow-hidden">
+        <div id="splash-bar" class="h-full bg-[#1D6FE8] rounded-full transition-all duration-300" style="width:0%"></div>
+      </div>
+      <p id="splash-pct" class="text-[#1D6FE8] text-xs text-right mt-1">0%</p>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div id="app" class="hidden max-w-sm mx-auto min-h-screen flex flex-col relative pb-20">
+
+    <!-- HOME / POPULAR DISHES VIEW -->
+    <div id="view-home" class="view active">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[#888] uppercase tracking-widest">Zekerdzi · Tbilisi</p>
+            <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Popular Dishes</h2>
+          </div>
+          <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm">
+            <svg class="w-5 h-5 text-[#0D0D0D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          </button>
+        </div>
+        <div class="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
+          <button data-filter="all" class="filter-pill active-pill">ALL</button>
+          <button data-filter="khachapuri" class="filter-pill">KHACHAPURI</button>
+          <button data-filter="khinkali" class="filter-pill">KHINKALI</button>
+          <button data-filter="grilled" class="filter-pill">GRILLED</button>
+        </div>
+      </div>
+
+      <!-- Hero Banner -->
+      <div class="mx-5 mt-2 rounded-2xl overflow-hidden relative h-44 bg-[#1a1a1a] shadow-lg">
+        <div class="absolute inset-0 bg-gradient-to-tr from-[#0D0D0D] via-transparent to-transparent z-10"></div>
+        <div class="hero-bg absolute inset-0 opacity-60"></div>
+        <div class="absolute bottom-4 left-4 z-20">
+          <span class="bg-[#C9A84C] text-[#0D0D0D] text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full">Chef's Selection</span>
+          <h3 class="text-white text-2xl font-display font-bold mt-1">Weekly Mix</h3>
+          <p class="text-white/70 text-xs">Experience the true taste of Georgia</p>
+        </div>
+      </div>
+
+      <div id="dishes-grid" class="grid grid-cols-2 gap-3 px-5 mt-5"></div>
+    </div>
+
+    <!-- MENU VIEW -->
+    <div id="view-menu" class="view hidden">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Zekerdzi Menu</h2>
+          <button onclick="goToCart()" class="w-10 h-10 flex items-center justify-center rounded-full bg-[#1D6FE8] shadow-md relative">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <span id="menu-cart-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-white text-[#1D6FE8] text-[10px] font-bold rounded-full flex items-center justify-center"></span>
+          </button>
+        </div>
+        <div class="mt-4 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm">
+          <svg class="w-4 h-4 text-[#AAA]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          <input id="menu-search" type="text" placeholder="Search delicious Georgian food..." class="flex-1 text-sm bg-transparent outline-none text-[#333] placeholder-[#BBB]" />
+        </div>
+        <div class="flex gap-2 mt-3 overflow-x-auto no-scrollbar">
+          <button data-cat="traditional" class="cat-pill active-cat">Traditional</button>
+          <button data-cat="grilled" class="cat-pill">Grilled</button>
+          <but
