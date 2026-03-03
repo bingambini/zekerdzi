@@ -215,29 +215,83 @@
 
     <div id="view-profile" class="view hidden">
       <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
-        <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">My Profile</h2>
+        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm active:scale-95 transition-transform">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
-        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">My Profile</h2>
-        <div class="w-9"></div>
       </div>
-      <div class="flex flex-col items-center mt-8 px-5">
-        <div class="w-24 h-24 rounded-full bg-white shadow-md flex items-center justify-center text-4xl mb-4 border-2 border-[#1D6FE8]">👤</div>
-        <h3 class="text-xl font-bold text-[#0D0D0D]">Saba K.</h3>
-        <p class="text-sm text-[#888]">+995 599 00 00 00</p>
-        <div class="w-full mt-10 space-y-3">
-          <div class="bg-white p-4 rounded-xl flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3"><span>📍</span><span class="text-sm font-medium">My Addresses</span></div>
-            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+
+      <div class="px-5">
+        <div class="flex items-center gap-4 mt-6">
+          <div class="relative">
+            <div class="w-20 h-20 rounded-2xl bg-[#0D0D0D] flex items-center justify-center text-3xl border-4 border-white shadow-xl">👤</div>
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-[#1D6FE8] rounded-full border-2 border-white flex items-center justify-center">
+              <span class="text-white text-[10px]">✔</span>
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-xl flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3"><span>💳</span><span class="text-sm font-medium">Payment Methods</span></div>
-            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          <div>
+            <h3 class="text-xl font-bold text-[#0D0D0D]">Saba K.</h3>
+            <p class="text-sm text-[#888]">Member since 2024</p>
           </div>
-          <div class="bg-white p-4 rounded-xl flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3"><span>⚙️</span><span class="text-sm font-medium">Settings</span></div>
-            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+
+        <div class="mt-8 bg-gradient-to-br from-[#1D6FE8] to-[#154fa3] rounded-3xl p-6 shadow-lg shadow-[#1D6FE8]/20 relative overflow-hidden">
+          <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
+             <span class="text-[120px] font-bold">Z</span>
           </div>
+          <div class="relative z-10">
+            <p class="text-white/70 text-[10px] uppercase tracking-[0.2em] font-bold">Z-Points Balance</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <h4 class="text-white text-4xl font-display font-bold">1,250</h4>
+              <span class="text-white/80 text-sm">pts</span>
+            </div>
+            <div class="mt-6 flex justify-between items-end">
+              <div class="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                <p class="text-white text-[10px] font-medium">Gold Status</p>
+              </div>
+              <button class="bg-white text-[#1D6FE8] text-xs font-bold px-4 py-2 rounded-xl shadow-sm">Redeem</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mt-6">
+          <div class="bg-white p-3 rounded-2xl text-center shadow-sm">
+            <p class="text-[10px] text-[#AAA] uppercase font-bold">Orders</p>
+            <p class="text-lg font-bold text-[#0D0D0D]">24</p>
+          </div>
+          <div class="bg-white p-3 rounded-2xl text-center shadow-sm">
+            <p class="text-[10px] text-[#AAA] uppercase font-bold">Favorites</p>
+            <p class="text-lg font-bold text-[#0D0D0D]">12</p>
+          </div>
+          <div class="bg-white p-3 rounded-2xl text-center shadow-sm">
+            <p class="text-[10px] text-[#AAA] uppercase font-bold">Reviews</p>
+            <p class="text-lg font-bold text-[#0D0D0D]">5</p>
+          </div>
+        </div>
+
+        <div class="mt-8 space-y-3 pb-10">
+          <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">⭐</div>
+              <span class="text-sm font-semibold text-[#0D0D0D]">My Favorites</span>
+            </div>
+            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">📍</div>
+              <span class="text-sm font-semibold text-[#0D0D0D]">Saved Addresses</span>
+            </div>
+            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">💳</div>
+              <span class="text-sm font-semibold text-[#0D0D0D]">Payment Methods</span>
+            </div>
+            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <button class="w-full mt-4 py-4 text-red-500 font-bold text-sm bg-white rounded-2xl shadow-sm active:bg-red-50 transition-colors">Log Out</button>
         </div>
       </div>
     </div>
