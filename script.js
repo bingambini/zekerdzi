@@ -29,26 +29,31 @@ async function fetchMenuData() {
 
 function processMenuData(allData) {
     const formattedData = allData.map(item => {
-        // ერთეულის განსაზღვრა (მხოლოდ იმ შემთხვევაში თუ წონა მითითებულია)
-        let unit = item.unit?.trim() || "";
-        if (!unit && item.weight) {
-            const cat = (item.category || item.cat || "").toLowerCase();
+        // უსაფრთხო ტექსტური კონვერტაცია (TypeError-ის თავიდან ასაცილებლად)
+        const getString = (val) => (val !== undefined && val !== null) ? String(val).trim() : "";
+        
+        let rawWeight = getString(item.weight);
+        let unit = getString(item.unit);
+        let time = getString(item.prep_time || item.time);
+
+        if (!unit && rawWeight) {
+            const cat = getString(item.category || item.cat).toLowerCase();
             unit = (cat.includes('სასმელი') || cat.includes('drink') || cat.includes('wine')) ? "მლ" : "გრ";
         }
 
         return {
             id: parseInt(item.id),
-            name: item.name?.trim(),
-            ka: (item.name_ka || item.ka)?.trim() || item.name?.trim(),
-            cat: (item.category || item.cat)?.trim(),
+            name: getString(item.name),
+            ka: getString(item.name_ka || item.ka) || getString(item.name),
+            cat: getString(item.category || item.cat),
             price: parseFloat(item.price) || 0,
-            desc: (item.description || item.desc)?.trim(),
-            emoji: (item.image || item.emoji)?.trim() || "🍽️",
+            desc: getString(item.description || item.desc),
+            emoji: getString(item.image || item.emoji) || "🍽️",
             bs: String(item.is_popular || item.bs).toLowerCase() === 'true',
-            options: item.options || '',
-            extras: item.extras || '',
-            time: (item.prep_time || item.time)?.trim() || "", // დეფოლტი ამოღებულია
-            weight: (item.weight)?.trim() || "",             // დეფოლტი ამოღებულია
+            options: getString(item.options),
+            extras: getString(item.extras),
+            time: time,    // თუ ცარიელია, იქნება ""
+            weight: rawWeight, // თუ ცარიელია, იქნება ""
             unit: unit
         };
     }).filter(item => item.id);
