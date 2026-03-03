@@ -35,7 +35,7 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 .add-btn:active { transform: scale(.9) }
 .bsb { position: absolute; top: 8px; left: 8px; background: #F5A623; color: #0D0D0D; font-size: 9px; font-weight: 800; letter-spacing: .06em; padding: 3px 7px; border-radius: 999px }
 
-.menu-item { background: white; border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; box-shadow: 0 1px 8px rgba(0,0,0,.05) }
+.menu-item { background: white; border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; box-shadow: 0 1px 8px rgba(0,0,0,.05); cursor: pointer }
 .menu-img { width: 64px; height: 64px; border-radius: 12px; background: #f0ebe0; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0 }
 .menu-info { flex: 1; min-width: 0 }
 .menu-name { font-size: 14px; font-weight: 600; color: #0D0D0D }
@@ -44,6 +44,11 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 .menu-price { color: #1D6FE8; font-weight: 700; font-size: 13px; display: block; margin-top: 6px }
 .menu-add { width: 32px; height: 32px; border-radius: 10px; border: 1.5px solid #E0EBFF; background: white; color: #1D6FE8; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0 }
 .menu-add:hover { background: #EEF3FD }
+
+/* DISH DETAIL SPECIFIC */
+#view-item-detail.active ~ nav { display: none; }
+#detail-img { transition: transform 0.5s ease; }
+#view-item-detail textarea:focus { outline: none; border-color: #1D6FE8; }
 
 .cart-item { background: white; border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; box-shadow: 0 1px 8px rgba(0,0,0,.05) }
 .cart-img { width: 64px; height: 64px; border-radius: 12px; background: #f0ebe0; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0 }
