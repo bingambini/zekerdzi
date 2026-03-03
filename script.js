@@ -65,25 +65,28 @@ function goToCart() {
 window.addEventListener('DOMContentLoaded', () => {
   const bar = document.getElementById('splash-bar');
   const pct = document.getElementById('splash-pct');
-  let progress = 0;
+  const duration = 3000; // 3 წამი
+  const steps = 60;
+  const stepTime = duration / steps;
+  let step = 0;
+
   const interval = setInterval(() => {
-    progress += Math.random() * 20 + 5;
-    if (progress >= 100) {
-      progress = 100;
+    step++;
+    const progress = Math.round((step / steps) * 100);
+    bar.style.width = progress + '%';
+    pct.textContent = progress + '%';
+
+    if (step >= steps) {
       clearInterval(interval);
+      const splash = document.getElementById('splash');
+      splash.classList.add('fade-out');
       setTimeout(() => {
-        const splash = document.getElementById('splash');
-        splash.classList.add('fade-out');
-        setTimeout(() => {
-          splash.style.display = 'none';
-          document.getElementById('app').classList.remove('hidden');
-          renderHome();
-        }, 500);
-      }, 400);
+        splash.style.display = 'none';
+        document.getElementById('app').classList.remove('hidden');
+        renderHome();
+      }, 500);
     }
-    bar.style.width = Math.min(progress, 100) + '%';
-    pct.textContent = Math.floor(Math.min(progress, 100)) + '%';
-  }, 180);
+  }, stepTime);
 
   // Nav buttons
   document.querySelectorAll('.nav-btn').forEach(btn => {
