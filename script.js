@@ -37,7 +37,8 @@ function processMenuData(allData) {
         desc: (item.description || item.desc)?.trim(),
         emoji: (item.image || item.emoji)?.trim() || "🍽️",
         bs: String(item.is_popular || item.bs).toLowerCase() === 'true',
-        options: item.options || '' // ვიღებთ options სვეტს
+        options: item.options || '', // ვიღებთ options სვეტს
+        extras: item.extras || '' // ვიღებთ extras სვეტს (დამატებული)
     })).filter(item => item.id);
 
     dishes = formattedData.filter(item => item.bs === true);
@@ -114,7 +115,7 @@ function showView(n) {
 
 function goBack() { showView(prevView || 'home'); }
 
-// --- დეტალური გვერდი ოფციებით (ინჟინრული პიცის ნახაზით) ---
+// --- დეტალური გვერდი ოფციებით და დინამიური ექსტრებით ---
 function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
@@ -128,24 +129,20 @@ function openProductDetail(id) {
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
     document.getElementById('detail-btn-price').textContent = '₾' + item.price.toFixed(2);
 
+    // 1. ზომების სექცია
     const optionsCont = document.getElementById('size-options-container');
     const sizeSection = document.getElementById('size-selection');
-    
     if (optionsCont) optionsCont.innerHTML = '';
 
     if (item.options && item.options.includes(':') && sizeSection) {
         sizeSection.classList.remove('hidden');
         const optionsArray = item.options.split(',').map(opt => opt.trim());
-        
         optionsArray.forEach((opt, index) => {
             const [label, priceAdd] = opt.split(':');
             const cleanLabel = label.trim();
             const priceVal = parseFloat(priceAdd);
-            
             const btn = document.createElement('div');
             btn.className = `size-pill ${index === 0 ? 'active' : ''}`;
-
-            // SVG "პიცის ნახაზი" - წრე და ნაჭრების ხაზები
             btn.innerHTML = `
                 <div class="pizza-draft-icon">
                     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -156,18 +153,14 @@ function openProductDetail(id) {
                 <div class="size-info-block">
                     <span class="size-name">${cleanLabel}</span>
                     <span class="size-price">+₾${priceVal.toFixed(2)}</span>
-                </div>
-            `;
+                </div>`;
             
-            if(index === 0) {
-                selectedOptions = { label: cleanLabel, extra: priceVal };
-            }
+            if(index === 0) selectedOptions = { label: cleanLabel, extra: priceVal };
 
             btn.onclick = function() {
                 document.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 selectedOptions = { label: cleanLabel, extra: priceVal };
-                
                 const newPrice = item.price + selectedOptions.extra;
                 document.getElementById('detail-price').textContent = '₾' + newPrice.toFixed(2);
                 document.getElementById('detail-btn-price').textContent = '₾' + newPrice.toFixed(2);
@@ -176,6 +169,29 @@ function openProductDetail(id) {
         });
     } else if (sizeSection) {
         sizeSection.classList.add('hidden');
+    }
+
+    // 2. Extra Toppings სექცია (დინამიური გამოჩენა)
+    const extrasCont = document.getElementById('extras-options-container');
+    const extrasSection = document.getElementById('extras-selection');
+    if (extrasCont) extrasCont.innerHTML = '';
+
+    if (item.extras && item.extras.trim() !== "" && extrasSection) {
+        extrasSection.classList.remove('hidden');
+        const extrasArray = item.extras.split(',').map(ex => ex.trim());
+        extrasArray.forEach(ex => {
+            const [exLabel, exPrice] = ex.split(':');
+            const div = document.createElement('div');
+            div.className = 'extra-item-row';
+            div.innerHTML = `
+                <label style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #F0F0F0; width:100%;">
+                    <span style="font-size:14px; color:#2D2D2D;">${exLabel.trim()} (+₾${parseFloat(exPrice).toFixed(2)})</span>
+                    <input type="checkbox" data-price="${exPrice}" style="width:20px; height:20px;">
+                </label>`;
+            extrasCont.appendChild(div);
+        });
+    } else if (extrasSection) {
+        extrasSection.classList.add('hidden');
     }
 
     const addBtn = document.getElementById('detail-add-btn');
