@@ -114,12 +114,11 @@ function showView(n) {
 
 function goBack() { showView(prevView || 'home'); }
 
-// --- დეტალური გვერდი ოფციებით ---
+// --- დეტალური გვერდი ოფციებით (განახლებული ვერსია იკონკებით) ---
 function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
 
-    // საწყისი მნიშვნელობების დაყენება
     selectedOptions = { label: '', extra: 0 };
     
     document.getElementById('detail-name').textContent = item.name;
@@ -134,25 +133,36 @@ function openProductDetail(id) {
     
     if (optionsCont) optionsCont.innerHTML = '';
 
-    // ოფციების დამუშავება (მაგ: "25სმ:0, 33სმ:7")
     if (item.options && item.options.includes(':') && sizeSection) {
         sizeSection.classList.remove('hidden');
         const optionsArray = item.options.split(',').map(opt => opt.trim());
         
         optionsArray.forEach((opt, index) => {
             const [label, priceAdd] = opt.split(':');
+            const cleanLabel = label.trim();
+            const priceVal = parseFloat(priceAdd);
+            
             const btn = document.createElement('div');
-            btn.className = `size-option ${index === 0 ? 'active' : ''}`;
-            btn.innerHTML = `<div>${label}</div><div style="font-size:10px; opacity:0.6">+₾${parseFloat(priceAdd).toFixed(2)}</div>`;
+            // ვიყენებთ "size-pill" კლასს ახალი დიზაინისთვის
+            btn.className = `size-pill ${index === 0 ? 'active' : ''}`;
+            btn.setAttribute('data-size-label', cleanLabel);
+
+            btn.innerHTML = `
+                <span class="size-icon">🍕</span>
+                <div class="size-info-block">
+                    <span class="size-name">${cleanLabel}</span>
+                    <span class="size-price">+₾${priceVal.toFixed(2)}</span>
+                </div>
+            `;
             
             if(index === 0) {
-                selectedOptions = { label: label, extra: parseFloat(priceAdd) };
+                selectedOptions = { label: cleanLabel, extra: priceVal };
             }
 
             btn.onclick = function() {
-                document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                selectedOptions = { label: label, extra: parseFloat(priceAdd) };
+                selectedOptions = { label: cleanLabel, extra: priceVal };
                 
                 const newPrice = item.price + selectedOptions.extra;
                 document.getElementById('detail-price').textContent = '₾' + newPrice.toFixed(2);
@@ -247,7 +257,6 @@ function getItem(id) {
 function addToCart(id, options = { label: '', extra: 0 }) {
     var it = getItem(id); if (!it) return;
     
-    // ვქმნით უნიკალურ გასაღებს კალათისთვის (სახელი + ზომა)
     var cartId = options.label ? id + '-' + options.label : id;
     var finalName = options.label ? it.name + ' (' + options.label + ')' : it.name;
     var finalPrice = it.price + options.extra;
