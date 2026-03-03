@@ -115,6 +115,19 @@ function showView(n) {
 
 function goBack() { showView(prevView || 'home'); }
 
+// --- ფასის დინამიური განახლების ფუნქცია ---
+function updateDetailPrice(basePrice) {
+    let extraToppingsPrice = 0;
+    const checkboxes = document.querySelectorAll('#extras-options-container input[type="checkbox"]:checked');
+    checkboxes.forEach(cb => {
+        extraToppingsPrice += parseFloat(cb.getAttribute('data-price')) || 0;
+    });
+
+    const total = basePrice + selectedOptions.extra + extraToppingsPrice;
+    document.getElementById('detail-price').textContent = '₾' + total.toFixed(2);
+    document.getElementById('detail-btn-price').textContent = '₾' + total.toFixed(2);
+}
+
 // --- დეტალური გვერდი ოფციებით და დინამიური ექსტრებით ---
 function openProductDetail(id) {
     var item = getItem(id);
@@ -161,9 +174,7 @@ function openProductDetail(id) {
                 document.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 selectedOptions = { label: cleanLabel, extra: priceVal };
-                const newPrice = item.price + selectedOptions.extra;
-                document.getElementById('detail-price').textContent = '₾' + newPrice.toFixed(2);
-                document.getElementById('detail-btn-price').textContent = '₾' + newPrice.toFixed(2);
+                updateDetailPrice(item.price);
             };
             optionsCont.appendChild(btn);
         });
@@ -184,9 +195,9 @@ function openProductDetail(id) {
             const div = document.createElement('div');
             div.className = 'extra-item-row';
             div.innerHTML = `
-                <label style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #F0F0F0; width:100%;">
+                <label style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #F0F0F0; width:100%; cursor:pointer;">
                     <span style="font-size:14px; color:#2D2D2D;">${exLabel.trim()} (+₾${parseFloat(exPrice).toFixed(2)})</span>
-                    <input type="checkbox" data-price="${exPrice}" style="width:20px; height:20px;">
+                    <input type="checkbox" data-price="${exPrice}" style="width:20px; height:20px;" onchange="updateDetailPrice(${item.price})">
                 </label>`;
             extrasCont.appendChild(div);
         });
@@ -194,9 +205,21 @@ function openProductDetail(id) {
         extrasSection.classList.add('hidden');
     }
 
+    // თავდაპირველი ფასის დასმა (თუ არის პირველივე ზომა არჩეული)
+    updateDetailPrice(item.price);
+
     const addBtn = document.getElementById('detail-add-btn');
     addBtn.onclick = function () {
-        addToCart(id, selectedOptions);
+        // ვაგროვებთ მონიშნულ ექსტრებს კალათისთვის
+        const selectedExtras = [];
+        document.querySelectorAll('#extras-options-container input[type="checkbox"]:checked').forEach(cb => {
+            selectedExtras.push({
+                label: cb.closest('label').querySelector('span').textContent.split(' (+₾')[0],
+                price: parseFloat(cb.getAttribute('data-price'))
+            });
+        });
+        
+        addToCart(id, selectedOptions, selectedExtras);
         goBack();
     };
 
@@ -274,12 +297,19 @@ function getItem(id) {
     return menu.find(function (d) { return d.id === parseInt(id); }); 
 }
 
-function addToCart(id, options = { label: '', extra: 0 }) {
+function addToCart(id, options = { label: '', extra: 0 }, extras = []) {
     var it = getItem(id); if (!it) return;
     
-    var cartId = options.label ? id + '-' + options.label : id;
-    var finalName = options.label ? it.name + ' (' + options.label + ')' : it.name;
-    var finalPrice = it.price + options.extra;
+    // ვქმნით უნიკალურ ID-ს კალათისთვის (ზომისა და არჩეული ტოპინგების მიხედვით)
+    var extrasKey = extras.map(e => e.label).sort().join('|');
+    var cartId = id + '-' + options.label + '-' + extrasKey;
+    
+    var extrasPrice = extras.reduce((sum, e) => sum + e.price, 0);
+    var finalPrice = it.price + options.extra + extrasPrice;
+    
+    var displayName = it.name;
+    if (options.label) displayName += ' (' + options.label + ')';
+    if (extras.length > 0) displayName += ' + ' + extras.map(e => e.label).join(', ');
 
     if (cart[cartId]) {
         cart[cartId].qty++;
@@ -287,7 +317,7 @@ function addToCart(id, options = { label: '', extra: 0 }) {
         cart[cartId] = {
             id: it.id,
             cartId: cartId,
-            name: finalName,
+            name: displayName,
             price: finalPrice,
             emoji: it.emoji,
             qty: 1
@@ -329,7 +359,7 @@ function renderCart() {
             <div class="qty-controls">
               <button class="qty-btn" onclick="removeFromCart('${i.cartId}')">−</button>
               <span class="qty-val">${i.qty}</span>
-              <button class="qty-btn plus" onclick="addToCart(${i.id}, {label:'${i.name.includes('(') ? i.name.split('(')[1].replace(')','') : ''}', extra: 0});renderCart()">+</button>
+              <button class="qty-btn plus" onclick="cart['${i.cartId}'].qty++; badge(); renderCart();">+</button>
             </div></div></div>`;
     }).join('');
     setSummary(items.reduce(function (s, i) { return s + i.price * i.qty; }, 0));
