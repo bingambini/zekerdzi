@@ -1,10 +1,10 @@
 var dishes = [
-    { id: 1, name: "Adjaruli Khachapuri", ka: "აჭარული ხაჭაპური", desc: "Cheese bread with egg yolk and butter", price: 14.00, emoji: "🍳", cat: "khachapuri", bs: true },
-    { id: 2, name: "Shish Kebab Mixed", ka: "შიშ-ქებაბი შერეული", desc: "Grilled mixed meat skewers", price: 28.50, emoji: "🍢", cat: "grilled", bs: true },
-    { id: 3, name: "Walnut Pkhali Trio", ka: "თხილის ფხალი", desc: "Spinach, beet and bean pkhali", price: 12.00, emoji: "🥗", cat: "salads", bs: false },
+    { id: 1, name: "Adjaruli Khachapuri", ka: "აჭარული ხაჭაპური", desc: "Boat-shaped bread filled with a mixture of sulguni and imeretian cheese, topped with a knob of butter and a runny egg yolk.", price: 14.00, emoji: "🍳", cat: "khachapuri", bs: true },
+    { id: 2, name: "Shish Kebab Mixed", ka: "შიშ-ქებაბი შერეული", desc: "Grilled mixed meat skewers with traditional spices", price: 28.50, emoji: "🍢", cat: "grilled", bs: true },
+    { id: 3, name: "Walnut Pkhali Trio", ka: "თხილის ფხალი", desc: "Spinach, beet and bean pkhali with pomegranate seeds", price: 12.00, emoji: "🥗", cat: "salads", bs: false },
     { id: 4, name: "Creamy Shkmeruli", ka: "შქმერული", desc: "Roasted chicken in garlic cream sauce", price: 19.50, emoji: "🍗", cat: "traditional", bs: true },
-    { id: 5, name: "Pork Ojakhuri", ka: "ოჯახური", desc: "Pan-fried pork with potatoes", price: 16.00, emoji: "🥩", cat: "grilled", bs: false },
-    { id: 6, name: "Lobio in Pot", ka: "ლობიო ქოთანში", desc: "Spiced kidney beans in clay pot", price: 11.00, emoji: "🫘", cat: "traditional", bs: false }
+    { id: 5, name: "Pork Ojakhuri", ka: "ოჯახური", desc: "Pan-fried pork with potatoes, onions and spices", price: 16.00, emoji: "🥩", cat: "grilled", bs: false },
+    { id: 6, name: "Lobio in Pot", ka: "ლობიო ქოთანში", desc: "Spiced kidney beans in clay pot with pickles", price: 11.00, emoji: "🫘", cat: "traditional", bs: false }
 ];
 
 var menu = [
@@ -13,7 +13,7 @@ var menu = [
     { id: 9, name: "Badrijani Nigvzit", ka: "ბადრიჯანი ნიგვზით", desc: "Fried eggplant with walnut paste", price: 12.00, emoji: "🍆", cat: "traditional" },
     { id: 10, name: "Pork Mtsvadi", ka: "ღორის მწვადი", desc: "Tender pork grilled over vine wood", price: 18.00, emoji: "🍖", cat: "grilled" },
     { id: 11, name: "Chicken Tabaka", ka: "წიწილა ტაბაკა", desc: "Crispy pressed whole chicken", price: 22.00, emoji: "🍗", cat: "grilled" },
-    { id: 12, name: "Tomato & Cucumber Salad", ka: "პომიდვრის სალათი", desc: "Fresh summer salad", price: 8.00, emoji: "🥗", cat: "salads" },
+    { id: 12, name: "Tomato & Cucumber Salad", ka: "პომიდვრის სალათი", desc: "Fresh summer salad with walnut dressing", price: 8.00, emoji: "🥗", cat: "salads" },
     { id: 13, name: "Glekhuri Salad", ka: "გლეხური სალათი", desc: "Village-style fresh vegetables", price: 9.00, emoji: "🥙", cat: "salads" },
     { id: 14, name: "Homemade Lemonade", ka: "სახლის ლიმონათი", desc: "Fresh-squeezed citrus lemonade", price: 6.00, emoji: "🍋", cat: "drinks" },
     { id: 15, name: "House Red Wine", ka: "სახლის წითელი ღვინო", desc: "Georgian Saperavi wine (200ml)", price: 8.50, emoji: "🍷", cat: "drinks" }
@@ -60,6 +60,27 @@ function showView(n) {
 function goBack() { showView(prevView || 'home'); }
 function goToCart() { showView('cart'); }
 
+// DISH DETAIL FUNCTION
+function openProductDetail(id) {
+    var item = getItem(id);
+    if (!item) return;
+
+    document.getElementById('detail-name').textContent = item.name;
+    document.getElementById('detail-ka').textContent = item.ka;
+    document.getElementById('detail-price').textContent = '₾' + item.price.toFixed(2);
+    document.getElementById('detail-desc').textContent = item.desc;
+    document.getElementById('detail-img').textContent = item.emoji;
+    document.getElementById('detail-btn-price').textContent = '₾' + item.price.toFixed(2);
+
+    const addBtn = document.getElementById('detail-add-btn');
+    addBtn.onclick = function () {
+        addToCart(id);
+        goBack();
+    };
+
+    showView('item-detail');
+}
+
 // EVENT LISTENERS
 document.querySelectorAll('.nav-btn').forEach(function (b) {
     b.addEventListener('click', function () { showView(b.dataset.nav); });
@@ -93,7 +114,7 @@ function renderHome(f) {
     var grid = document.getElementById('dishes-grid');
     if (!grid) return;
     grid.innerHTML = list.map(function (d) {
-        return `<div class="dish-card" onclick="addToCart(${d.id})">
+        return `<div class="dish-card" onclick="openProductDetail(${d.id})">
           <div style="position:relative">
             <div class="dish-img">${d.emoji}</div>
             ${d.bs ? '<span class="bsb">BEST SELLER</span>' : ''}
@@ -118,7 +139,7 @@ function renderMenuItems(items) {
     if (!el) return;
     if (!items.length) { el.innerHTML = '<p style="text-align:center;color:#AAA;padding:40px;font-size:14px">No dishes found</p>'; return; }
     el.innerHTML = items.map(function (i) {
-        return `<div class="menu-item">
+        return `<div class="menu-item" onclick="openProductDetail(${i.id})">
           <div class="menu-img">${i.emoji}</div>
           <div class="menu-info">
             <p class="menu-name">${i.name}</p>
@@ -126,7 +147,7 @@ function renderMenuItems(items) {
             <p class="menu-desc">${i.desc}</p>
             <span class="menu-price">₾${i.price.toFixed(2)}</span>
           </div>
-          <button class="menu-add" onclick="addToCart(${i.id})">+</button>
+          <button class="menu-add" onclick="event.stopPropagation();addToCart(${i.id})">+</button>
         </div>`;
     }).join('');
 }
