@@ -28,18 +28,30 @@ async function fetchMenuData() {
 }
 
 function processMenuData(allData) {
-    const formattedData = allData.map(item => ({
-        id: parseInt(item.id),
-        name: item.name?.trim(),
-        ka: (item.name_ka || item.ka)?.trim(),
-        cat: (item.category || item.cat)?.trim(),
-        price: parseFloat(item.price) || 0,
-        desc: (item.description || item.desc)?.trim(),
-        emoji: (item.image || item.emoji)?.trim() || "🍽️",
-        bs: String(item.is_popular || item.bs).toLowerCase() === 'true',
-        options: item.options || '', // ვიღებთ options სვეტს
-        extras: item.extras || '' // ვიღებთ extras სვეტს (დამატებული)
-    })).filter(item => item.id);
+    const formattedData = allData.map(item => {
+        // ერთეულის (გრ/მლ) განსაზღვრა
+        let unit = item.unit?.trim();
+        if (!unit) {
+            const cat = (item.category || item.cat || "").toLowerCase();
+            unit = (cat.includes('სასმელი') || cat.includes('drink') || cat.includes('wine')) ? "მლ" : "გრ";
+        }
+
+        return {
+            id: parseInt(item.id),
+            name: item.name?.trim(),
+            ka: (item.name_ka || item.ka)?.trim() || item.name?.trim(),
+            cat: (item.category || item.cat)?.trim(),
+            price: parseFloat(item.price) || 0,
+            desc: (item.description || item.desc)?.trim(),
+            emoji: (item.image || item.emoji)?.trim() || "🍽️",
+            bs: String(item.is_popular || item.bs).toLowerCase() === 'true',
+            options: item.options || '',
+            extras: item.extras || '',
+            time: item.prep_time || item.time || "15-20",
+            weight: item.weight || "",
+            unit: unit
+        };
+    }).filter(item => item.id);
 
     dishes = formattedData.filter(item => item.bs === true);
     menu = formattedData;
@@ -205,12 +217,10 @@ function openProductDetail(id) {
         extrasSection.classList.add('hidden');
     }
 
-    // თავდაპირველი ფასის დასმა (თუ არის პირველივე ზომა არჩეული)
     updateDetailPrice(item.price);
 
     const addBtn = document.getElementById('detail-add-btn');
     addBtn.onclick = function () {
-        // ვაგროვებთ მონიშნულ ექსტრებს კალათისთვის
         const selectedExtras = [];
         document.querySelectorAll('#extras-options-container input[type="checkbox"]:checked').forEach(cb => {
             selectedExtras.push({
@@ -246,17 +256,27 @@ function renderHome(f) {
     var list = (f === 'all' || !f) ? dishes : dishes.filter(function (d) { return d.cat === f; });
     var grid = document.getElementById('dishes-grid');
     if (!grid) return;
+    
     grid.innerHTML = list.map(function (d) {
-        return `<div class="dish-card" onclick="openProductDetail(${d.id})">
+        const weightInfo = d.weight ? `<span>⚖ ${d.weight} ${d.unit}</span>` : '';
+        return `
+        <div class="dish-card" onclick="openProductDetail(${d.id})">
           <div style="position:relative; height:140px;">
             ${getMediaHtml(d.emoji, 'dish-img')}
             ${d.bs ? '<span class="bsb">BEST SELLER</span>' : ''}
           </div>
           <div class="dish-info">
-            <p class="dish-name">${d.name}</p>
-            <p class="dish-price">₾${d.price.toFixed(2)}</p>
-            <button class="add-btn" onclick="event.stopPropagation();openProductDetail(${d.id})">+</button>
-          </div></div>`;
+            <p class="dish-name">${d.ka}</p>
+            <div class="dish-meta" style="display:flex; gap:10px; font-size:11px; color:#888; margin: 4px 0 12px 0;">
+                <span>⏱ ${d.time} წთ</span>
+                ${weightInfo}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:18px;">₾${d.price.toFixed(2)}</p>
+                <button class="add-btn" style="position:static;" onclick="event.stopPropagation();openProductDetail(${d.id})">+</button>
+            </div>
+          </div>
+        </div>`;
     }).join('');
 }
 
@@ -282,8 +302,8 @@ function renderMenuItems(items) {
             ${getMediaHtml(i.emoji, 'menu-img')}
           </div>
           <div class="menu-info">
-            <p class="menu-name">${i.name}</p>
-            <p class="menu-ka">${i.ka}</p>
+            <p class="menu-name">${i.ka}</p>
+            <p class="menu-ka">${i.name}</p>
             <p class="menu-desc">${i.desc}</p>
             <span class="menu-price">₾${i.price.toFixed(2)}</span>
           </div>
@@ -300,14 +320,13 @@ function getItem(id) {
 function addToCart(id, options = { label: '', extra: 0 }, extras = []) {
     var it = getItem(id); if (!it) return;
     
-    // ვქმნით უნიკალურ ID-ს კალათისთვის (ზომისა და არჩეული ტოპინგების მიხედვით)
     var extrasKey = extras.map(e => e.label).sort().join('|');
     var cartId = id + '-' + options.label + '-' + extrasKey;
     
     var extrasPrice = extras.reduce((sum, e) => sum + e.price, 0);
     var finalPrice = it.price + options.extra + extrasPrice;
     
-    var displayName = it.name;
+    var displayName = it.ka;
     if (options.label) displayName += ' (' + options.label + ')';
     if (extras.length > 0) displayName += ' + ' + extras.map(e => e.label).join(', ');
 
