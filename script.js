@@ -3,73 +3,91 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqYWtr5sLnkZFFMhq6e
 var dishes = []; // პოპულარული კერძებისთვის
 var menu = [];   // სრული მენიუსთვის
 var cart = {}, prevView = 'home', curView = 'home';
+var dataLoaded = false; // მონაცემების სტატუსი
 
-// 1. მონაცემების წამოღება Google Apps Script-დან
+// 1. მონაცემების წამოღება ოპტიმიზაციით (Caching & Async Processing)
 async function fetchMenuData() {
+    // ჯერ ვამოწმებთ ქეშს, რომ მომხმარებელმა მაშინვე დაინახოს მენიუ
+    const cache = localStorage.getItem('menu_cache');
+    if (cache) {
+        processMenuData(JSON.parse(cache));
+    }
+
     try {
         const response = await fetch(SCRIPT_URL);
         const allData = await response.json();
         
-        // მონაცემების ფორმატირება (Mapping) შიტის სათაურების მიხედვით
-        const formattedData = allData.map(item => {
-            return {
-                id: parseInt(item.id),
-                name: item.name?.trim(),
-                ka: (item.name_ka || item.ka)?.trim(),
-                cat: (item.category || item.cat)?.trim(), // ვინახავთ ორიგინალ კატეგორიას (მაგ: "მწვადი")
-                price: parseFloat(item.price) || 0,
-                desc: (item.description || item.desc)?.trim(),
-                emoji: (item.image || item.emoji)?.trim() || "🍽️",
-                bs: String(item.is_popular || item.bs).toLowerCase() === 'true'
-            };
-        }).filter(item => item.id);
-
-        // ვანაწილებთ მონაცემებს
-        dishes = formattedData.filter(item => item.bs === true);
-        menu = formattedData;
-
-        // საწყისი რენდერი მონაცემების ჩატვირთვის შემდეგ
-        renderHome('all');
-        
-        // ავტომატურად ვტვირთავთ მენიუს პირველ კატეგორიას, თუ არსებობს
-        if (menu.length > 0) renderMenu(menu[0].cat); 
-        
+        // ვინახავთ ახალ მონაცემებს ქეშში
+        localStorage.setItem('menu_cache', JSON.stringify(allData));
+        processMenuData(allData);
+        dataLoaded = true; // მონაცემები წარმატებით მოვიდა
     } catch (error) {
-        console.error('Error fetching menu via Apps Script:', error);
+        console.error('Error fetching menu:', error);
+        dataLoaded = true; // შეცდომის შემთხვევაშიც ვაგრძელებთ, რომ Splash არ გაიჭედოს
     }
+}
+
+// მონაცემების დამუშავების ცალკე ფუნქცია
+function processMenuData(allData) {
+    const formattedData = allData.map(item => ({
+        id: parseInt(item.id),
+        name: item.name?.trim(),
+        ka: (item.name_ka || item.ka)?.trim(),
+        cat: (item.category || item.cat)?.trim(),
+        price: parseFloat(item.price) || 0,
+        desc: (item.description || item.desc)?.trim(),
+        emoji: (item.image || item.emoji)?.trim() || "🍽️",
+        bs: String(item.is_popular || item.bs).toLowerCase() === 'true'
+    })).filter(item => item.id);
+
+    dishes = formattedData.filter(item => item.bs === true);
+    menu = formattedData;
+
+    renderHome('all');
+    if (menu.length > 0) renderMenu(null);
 }
 
 // დამხმარე ფუნქცია სურათის/ემოჯის გამოსაჩენად
 function getMediaHtml(val, cls) {
     if (val && val.startsWith('http')) {
-        return `<img src="${val}" class="${cls}" alt="dish" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
+        // დავამატე loading="lazy" სურათების სწრაფი რენდერისთვის
+        return `<img src="${val}" class="${cls}" alt="dish" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
     }
     return `<div class="${cls}">${val}</div>`;
 }
 
-// SPLASH LOGIC
+// OPTIMIZED SPLASH LOGIC (მორგებულია ჩატვირთვის რეალურ დროზე)
 (function () {
     var bar = document.getElementById('splash-bar');
     var pct = document.getElementById('splash-pct');
-    var step = 0, steps = 60, iv = setInterval(function () {
-        step++;
-        var p = Math.round(step / steps * 100);
-        if (bar) bar.style.width = p + '%';
-        if (pct) pct.textContent = p + '%';
-        if (step >= steps) {
+    var p = 0;
+    
+    var iv = setInterval(function () {
+        if (p < 85) {
+            p += Math.random() * 5; // ივსება იმიტირებულად 85%-მდე
+        } else if (dataLoaded && p < 100) {
+            p += 5; // თუ მონაცემები მოვიდა, სწრაფად ამთავრებს
+        }
+
+        var currentP = Math.min(Math.round(p), 100);
+        if (bar) bar.style.width = currentP + '%';
+        if (pct) pct.textContent = currentP + '%';
+
+        if (currentP >= 100) {
             clearInterval(iv);
             var s = document.getElementById('splash');
             if (s) {
                 s.style.opacity = '0';
-                s.style.pointerEvents = 'none';
+                s.style.transition = 'opacity 0.5s ease';
                 setTimeout(function () {
                     s.style.display = 'none';
                     document.getElementById('app').classList.remove('hidden');
-                    fetchMenuData(); // ვიძახებთ მონაცემებს აპლიკაციის გახსნისას
                 }, 500);
             }
         }
-    }, 50);
+    }, 80);
+
+    fetchMenuData(); // ვიწყებთ მონაცემების ჩატვირთვას პარალელურად
 })();
 
 // NAVIGATION FUNCTIONS
@@ -96,7 +114,6 @@ function openProductDetail(id) {
     document.getElementById('detail-price').textContent = '₾' + item.price.toFixed(2);
     document.getElementById('detail-desc').textContent = item.desc;
     
-    // სურათის ჩასმა დეტალებში
     const imgCont = document.getElementById('detail-img');
     imgCont.innerHTML = getMediaHtml(item.emoji, ''); 
     
@@ -144,7 +161,6 @@ if (searchInput) {
 
 // RENDER LOGIC
 function renderHome(f) {
-    // ფილტრაცია კატეგორიის მიხედვით (თუ f არის 'all', ვაჩვენებთ dishes მასივს)
     var list = (f === 'all' || !f) ? dishes : dishes.filter(function (d) { return d.cat === f; });
     var grid = document.getElementById('dishes-grid');
     if (!grid) return;
