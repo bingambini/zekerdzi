@@ -29,9 +29,9 @@ async function fetchMenuData() {
 
 function processMenuData(allData) {
     const formattedData = allData.map(item => {
-        // ერთეულის (გრ/მლ) განსაზღვრა
-        let unit = item.unit?.trim();
-        if (!unit) {
+        // ერთეულის განსაზღვრა (მხოლოდ იმ შემთხვევაში თუ წონა მითითებულია)
+        let unit = item.unit?.trim() || "";
+        if (!unit && item.weight) {
             const cat = (item.category || item.cat || "").toLowerCase();
             unit = (cat.includes('სასმელი') || cat.includes('drink') || cat.includes('wine')) ? "მლ" : "გრ";
         }
@@ -47,8 +47,8 @@ function processMenuData(allData) {
             bs: String(item.is_popular || item.bs).toLowerCase() === 'true',
             options: item.options || '',
             extras: item.extras || '',
-            time: item.prep_time || item.time || "15-20",
-            weight: item.weight || "",
+            time: (item.prep_time || item.time)?.trim() || "", // დეფოლტი ამოღებულია
+            weight: (item.weight)?.trim() || "",             // დეფოლტი ამოღებულია
             unit: unit
         };
     }).filter(item => item.id);
@@ -194,7 +194,7 @@ function openProductDetail(id) {
         sizeSection.classList.add('hidden');
     }
 
-    // 2. Extra Toppings სექცია (დინამიური გამოჩენა)
+    // 2. Extra Toppings სექცია
     const extrasCont = document.getElementById('extras-options-container');
     const extrasSection = document.getElementById('extras-selection');
     if (extrasCont) extrasCont.innerHTML = '';
@@ -258,22 +258,34 @@ function renderHome(f) {
     if (!grid) return;
     
     grid.innerHTML = list.map(function (d) {
-        const weightInfo = d.weight ? `<span>⚖ ${d.weight} ${d.unit}</span>` : '';
+        const timeHtml = d.time ? `<span>⏱ ${d.time} წთ</span>` : '';
+        const weightHtml = d.weight ? `<span>⚖ ${d.weight} ${d.unit}</span>` : '';
+        
+        const metaSection = (timeHtml || weightHtml) 
+            ? `<div class="dish-meta" style="display:flex; gap:12px; font-size:11px; color:#888; margin: 6px 0 14px 0; font-weight: 500;">
+                 ${timeHtml} ${weightHtml}
+               </div>` 
+            : '<div style="margin-bottom: 14px;"></div>';
+
         return `
-        <div class="dish-card" onclick="openProductDetail(${d.id})">
-          <div style="position:relative; height:140px;">
+        <div class="dish-card" onclick="openProductDetail(${d.id})" style="display: flex; flex-direction: column;">
+          <div style="position:relative; height:150px; overflow: hidden; border-radius: 1.5rem 1.5rem 0 0;">
             ${getMediaHtml(d.emoji, 'dish-img')}
-            ${d.bs ? '<span class="bsb">BEST SELLER</span>' : ''}
+            ${d.bs ? '<span class="bsb" style="top: 12px; left: 12px;">BEST SELLER</span>' : ''}
           </div>
-          <div class="dish-info">
-            <p class="dish-name">${d.ka}</p>
-            <div class="dish-meta" style="display:flex; gap:10px; font-size:11px; color:#888; margin: 4px 0 12px 0;">
-                <span>⏱ ${d.time} წთ</span>
-                ${weightInfo}
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:18px;">₾${d.price.toFixed(2)}</p>
-                <button class="add-btn" style="position:static;" onclick="event.stopPropagation();openProductDetail(${d.id})">+</button>
+          <div class="dish-info" style="padding: 16px; display: flex; flex-direction: column; flex-grow: 1;">
+            <p class="dish-name" style="margin: 0; font-weight: 700; font-size: 16px; color: #000;">${d.ka}</p>
+            
+            ${metaSection}
+
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top: auto;">
+                <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:22px; letter-spacing: -0.5px;">₾${d.price.toFixed(2)}</p>
+                <button class="add-btn" style="position:static; width: 42px; height: 42px; background: #1D6FE8; border-radius: 12px; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="event.stopPropagation();openProductDetail(${d.id})">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
             </div>
           </div>
         </div>`;
