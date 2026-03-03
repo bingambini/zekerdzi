@@ -16,7 +16,7 @@ async function fetchMenuData() {
                 id: parseInt(item.id),
                 name: item.name?.trim(),
                 ka: (item.name_ka || item.ka)?.trim(),
-                cat: (item.category || item.cat)?.trim().toLowerCase(),
+                cat: (item.category || item.cat)?.trim(), // ვინახავთ ორიგინალ კატეგორიას (მაგ: "მწვადი")
                 price: parseFloat(item.price) || 0,
                 desc: (item.description || item.desc)?.trim(),
                 emoji: (item.image || item.emoji)?.trim() || "🍽️",
@@ -30,10 +30,21 @@ async function fetchMenuData() {
 
         // საწყისი რენდერი მონაცემების ჩატვირთვის შემდეგ
         renderHome('all');
-        renderMenu(null); // ამატებს მენიუს რენდერს ჩატვირთვისას
+        
+        // ავტომატურად ვტვირთავთ მენიუს პირველ კატეგორიას, თუ არსებობს
+        if (menu.length > 0) renderMenu(menu[0].cat); 
+        
     } catch (error) {
         console.error('Error fetching menu via Apps Script:', error);
     }
+}
+
+// დამხმარე ფუნქცია სურათის/ემოჯის გამოსაჩენად
+function getMediaHtml(val, cls) {
+    if (val && val.startsWith('http')) {
+        return `<img src="${val}" class="${cls}" alt="dish" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
+    }
+    return `<div class="${cls}">${val}</div>`;
 }
 
 // SPLASH LOGIC
@@ -84,7 +95,11 @@ function openProductDetail(id) {
     document.getElementById('detail-ka').textContent = item.ka;
     document.getElementById('detail-price').textContent = '₾' + item.price.toFixed(2);
     document.getElementById('detail-desc').textContent = item.desc;
-    document.getElementById('detail-img').textContent = item.emoji;
+    
+    // სურათის ჩასმა დეტალებში
+    const imgCont = document.getElementById('detail-img');
+    imgCont.innerHTML = getMediaHtml(item.emoji, ''); 
+    
     document.getElementById('detail-btn-price').textContent = '₾' + item.price.toFixed(2);
 
     const addBtn = document.getElementById('detail-add-btn');
@@ -104,14 +119,16 @@ document.querySelectorAll('.nav-btn').forEach(function (b) {
 document.querySelectorAll('.filter-pill').forEach(function (p) {
     p.addEventListener('click', function () {
         document.querySelectorAll('.filter-pill').forEach(function (x) { x.classList.remove('active-pill'); });
-        p.classList.add('active-pill'); renderHome(p.dataset.filter);
+        p.classList.add('active-pill'); 
+        renderHome(p.dataset.filter);
     });
 });
 
 document.querySelectorAll('.cat-pill').forEach(function (p) {
     p.addEventListener('click', function () {
         document.querySelectorAll('.cat-pill').forEach(function (x) { x.classList.remove('active-cat'); });
-        p.classList.add('active-cat'); renderMenu(p.dataset.cat);
+        p.classList.add('active-cat'); 
+        renderMenu(p.dataset.cat);
     });
 });
 
@@ -120,20 +137,21 @@ if (searchInput) {
     searchInput.addEventListener('input', function (e) {
         var q = e.target.value.toLowerCase();
         renderMenuItems(menu.filter(function (i) { 
-            return i.name.toLowerCase().includes(q) || (i.ka && i.ka.includes(q)); 
+            return i.name.toLowerCase().includes(q) || (i.ka && i.ka.toLowerCase().includes(q)); 
         }));
     });
 }
 
 // RENDER LOGIC
 function renderHome(f) {
-    var list = f === 'all' ? dishes : dishes.filter(function (d) { return d.cat === f; });
+    // ფილტრაცია კატეგორიის მიხედვით (თუ f არის 'all', ვაჩვენებთ dishes მასივს)
+    var list = (f === 'all' || !f) ? dishes : dishes.filter(function (d) { return d.cat === f; });
     var grid = document.getElementById('dishes-grid');
     if (!grid) return;
     grid.innerHTML = list.map(function (d) {
         return `<div class="dish-card" onclick="openProductDetail(${d.id})">
-          <div style="position:relative">
-            <div class="dish-img">${d.emoji}</div>
+          <div style="position:relative; height:140px;">
+            ${getMediaHtml(d.emoji, 'dish-img')}
             ${d.bs ? '<span class="bsb">BEST SELLER</span>' : ''}
             <button style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,.9);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px" onclick="event.stopPropagation()">♡</button>
           </div>
@@ -146,8 +164,10 @@ function renderHome(f) {
 }
 
 function renderMenu(cat) {
-    var ap = document.querySelector('.cat-pill.active-cat');
-    cat = cat || (ap ? ap.dataset.cat : 'traditional');
+    if (!cat) {
+        var ap = document.querySelector('.cat-pill.active-cat');
+        cat = ap ? ap.dataset.cat : (menu.length > 0 ? menu[0].cat : '');
+    }
     renderMenuItems(menu.filter(function (i) { return i.cat === cat; }));
 }
 
@@ -157,7 +177,9 @@ function renderMenuItems(items) {
     if (!items.length) { el.innerHTML = '<p style="text-align:center;color:#AAA;padding:40px;font-size:14px">No dishes found</p>'; return; }
     el.innerHTML = items.map(function (i) {
         return `<div class="menu-item" onclick="openProductDetail(${i.id})">
-          <div class="menu-img">${i.emoji}</div>
+          <div class="menu-img-cont" style="width:80px; height:80px; flex-shrink:0;">
+            ${getMediaHtml(i.emoji, 'menu-img')}
+          </div>
           <div class="menu-info">
             <p class="menu-name">${i.name}</p>
             <p class="menu-ka">${i.ka}</p>
@@ -208,7 +230,7 @@ function renderCart() {
     }
     c.innerHTML = items.map(function (i) {
         return `<div class="cart-item">
-          <div class="cart-img">${i.emoji}</div>
+          <div class="cart-img" style="width:60px; height:60px;">${getMediaHtml(i.emoji, '')}</div>
           <div class="cart-info">
             <p class="cart-name">${i.name}</p>
             <p class="cart-price">₾${i.price.toFixed(2)}</p>
