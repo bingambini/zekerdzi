@@ -1,25 +1,40 @@
-var dishes = [
-    { id: 1, name: "Adjaruli Khachapuri", ka: "აჭარული ხაჭაპური", desc: "Boat-shaped bread filled with a mixture of sulguni and imeretian cheese, topped with a knob of butter and a runny egg yolk.", price: 14.00, emoji: "🍳", cat: "khachapuri", bs: true },
-    { id: 2, name: "Shish Kebab Mixed", ka: "შიშ-ქებაბი შერეული", desc: "Grilled mixed meat skewers with traditional spices", price: 28.50, emoji: "🍢", cat: "grilled", bs: true },
-    { id: 3, name: "Walnut Pkhali Trio", ka: "თხილის ფხალი", desc: "Spinach, beet and bean pkhali with pomegranate seeds", price: 12.00, emoji: "🥗", cat: "salads", bs: false },
-    { id: 4, name: "Creamy Shkmeruli", ka: "შქმერული", desc: "Roasted chicken in garlic cream sauce", price: 19.50, emoji: "🍗", cat: "traditional", bs: true },
-    { id: 5, name: "Pork Ojakhuri", ka: "ოჯახური", desc: "Pan-fried pork with potatoes, onions and spices", price: 16.00, emoji: "🥩", cat: "grilled", bs: false },
-    { id: 6, name: "Lobio in Pot", ka: "ლობიო ქოთანში", desc: "Spiced kidney beans in clay pot with pickles", price: 11.00, emoji: "🫘", cat: "traditional", bs: false }
-];
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQeGoclY93Hp89AweBslslTzJrn0G1wJtWkDen1zdOr_QOJvW_hykguzPnh0k8Sn5jtb0XB-1OELaXy/pub?output=csv';
 
-var menu = [
-    { id: 7, name: "Khinkali (Kalakuri)", ka: "ხინკალი ქალაქური", desc: "Meat, herbs, and juicy broth", price: 2.00, emoji: "🥟", cat: "traditional" },
-    { id: 8, name: "Adjaruli Khachapuri", ka: "აჭარული ხაჭაპური", desc: "Cheese bread with egg yolk and butter", price: 15.50, emoji: "🍳", cat: "traditional" },
-    { id: 9, name: "Badrijani Nigvzit", ka: "ბადრიჯანი ნიგვზით", desc: "Fried eggplant with walnut paste", price: 12.00, emoji: "🍆", cat: "traditional" },
-    { id: 10, name: "Pork Mtsvadi", ka: "ღორის მწვადი", desc: "Tender pork grilled over vine wood", price: 18.00, emoji: "🍖", cat: "grilled" },
-    { id: 11, name: "Chicken Tabaka", ka: "წიწილა ტაბაკა", desc: "Crispy pressed whole chicken", price: 22.00, emoji: "🍗", cat: "grilled" },
-    { id: 12, name: "Tomato & Cucumber Salad", ka: "პომიდვრის სალათი", desc: "Fresh summer salad with walnut dressing", price: 8.00, emoji: "🥗", cat: "salads" },
-    { id: 13, name: "Glekhuri Salad", ka: "გლეხური სალათი", desc: "Village-style fresh vegetables", price: 9.00, emoji: "🥙", cat: "salads" },
-    { id: 14, name: "Homemade Lemonade", ka: "სახლის ლიმონათი", desc: "Fresh-squeezed citrus lemonade", price: 6.00, emoji: "🍋", cat: "drinks" },
-    { id: 15, name: "House Red Wine", ka: "სახლის წითელი ღვინო", desc: "Georgian Saperavi wine (200ml)", price: 8.50, emoji: "🍷", cat: "drinks" }
-];
-
+var dishes = []; // პოპულარული კერძებისთვის
+var menu = [];   // სრული მენიუსთვის
 var cart = {}, prevView = 'home', curView = 'home';
+
+// 1. მონაცემების წამოღება Google Sheets-დან
+async function fetchMenuData() {
+    try {
+        const response = await fetch(SHEET_CSV_URL);
+        const data = await response.text();
+        const rows = data.split('\n').slice(1);
+        
+        const allData = rows.map(row => {
+            const cols = row.split(',');
+            return {
+                id: parseInt(cols[0]),
+                name: cols[1]?.trim(),
+                ka: cols[2]?.trim(),
+                cat: cols[3]?.trim().toLowerCase(),
+                price: parseFloat(cols[4]) || 0,
+                desc: cols[5]?.trim(),
+                emoji: cols[6]?.trim() || "🍽️",
+                bs: cols[7]?.trim().toLowerCase() === 'true'
+            };
+        }).filter(item => item.id);
+
+        // ვანაწილებთ მონაცემებს
+        dishes = allData.filter(item => item.bs === true);
+        menu = allData;
+
+        // საწყისი რენდერი მონაცემების ჩატვირთვის შემდეგ
+        renderHome('all');
+    } catch (error) {
+        console.error('Error fetching menu:', error);
+    }
+}
 
 // SPLASH LOGIC
 (function () {
@@ -39,7 +54,7 @@ var cart = {}, prevView = 'home', curView = 'home';
                 setTimeout(function () {
                     s.style.display = 'none';
                     document.getElementById('app').classList.remove('hidden');
-                    renderHome('all');
+                    fetchMenuData(); // ვიძახებთ მონაცემებს აპლიკაციის გახსნისას
                 }, 500);
             }
         }
@@ -104,7 +119,9 @@ const searchInput = document.getElementById('menu-search');
 if (searchInput) {
     searchInput.addEventListener('input', function (e) {
         var q = e.target.value.toLowerCase();
-        renderMenuItems(menu.filter(function (i) { return i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q); }));
+        renderMenuItems(menu.filter(function (i) { 
+            return i.name.toLowerCase().includes(q) || (i.ka && i.ka.includes(q)); 
+        }));
     });
 }
 
@@ -153,7 +170,7 @@ function renderMenuItems(items) {
 }
 
 // CART LOGIC
-function getItem(id) { return dishes.concat(menu).find(function (d) { return d.id === id; }); }
+function getItem(id) { return menu.find(function (d) { return d.id === id; }); }
 
 function addToCart(id) {
     var it = getItem(id); if (!it) return;
