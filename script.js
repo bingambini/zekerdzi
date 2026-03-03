@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyI-67cqENKBz9kBP5AAQ_cfPxeMnQhRwsy8yM4P47qRm0LpYur64WrFrU43hq-JRyl/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqYWtr5sLnkZFFMhq6eiudBo84je0sPlfrsD-MlDwjDWoPKFqmOQqHl26Y21QedRgc/exec';
 
 var dishes = []; // პოპულარული კერძებისთვის
 var menu = [];   // სრული მენიუსთვის
