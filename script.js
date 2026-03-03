@@ -1,11 +1,13 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqYWtr5sLnkZFFMhq6eiudBo84je0sPlfrsD-MlDwjDWoPKFqmOQqHl26Y21QedRgc/exec';
 
-var dishes = []; // პოპულარული კერძებისთვის
-var menu = [];   // სრული მენიუსთვის
+var dishes = []; 
+var menu = [];   
 var cart = {}, prevView = 'home', curView = 'home';
-var dataLoaded = false; // მონაცემების სტატუსი
+var dataLoaded = false; 
 
-// 1. მონაცემების წამოღება ოპტიმიზაციით (Caching & Async Processing)
+// ცვლადი არჩეული ზომის შესანახად
+var selectedOptions = { label: '', extra: 0 };
+
 async function fetchMenuData() {
     const cache = localStorage.getItem('menu_cache');
     if (cache) {
@@ -25,42 +27,35 @@ async function fetchMenuData() {
     }
 }
 
-// მონაცემების დამუშავების და კატეგორიების გენერირების ფუნქცია
 function processMenuData(allData) {
     const formattedData = allData.map(item => ({
         id: parseInt(item.id),
         name: item.name?.trim(),
         ka: (item.name_ka || item.ka)?.trim(),
-        cat: (item.category || item.cat)?.trim(), // იღებს მნიშვნელობას შენი Dropdown-იდან
+        cat: (item.category || item.cat)?.trim(),
         price: parseFloat(item.price) || 0,
         desc: (item.description || item.desc)?.trim(),
         emoji: (item.image || item.emoji)?.trim() || "🍽️",
-        bs: String(item.is_popular || item.bs).toLowerCase() === 'true'
+        bs: String(item.is_popular || item.bs).toLowerCase() === 'true',
+        options: item.options || '' // ვიღებთ options სვეტს
     })).filter(item => item.id);
 
     dishes = formattedData.filter(item => item.bs === true);
     menu = formattedData;
 
-    // აშენებს კატეგორიის ღილაკებს შიტის მონაცემებზე დაყრდნობით
     buildCategoryFilters();
-
     renderHome('all');
     
-    // საწყისი რენდერი პირველივე ხელმისაწვდომი კატეგორიით
     if (menu.length > 0) {
         const uniqueCats = [...new Set(menu.map(i => i.cat))].filter(c => c);
         if (uniqueCats.length > 0) renderMenu(uniqueCats[0]);
     }
 }
 
-// კატეგორიის ღილაკების (Pills) დინამიური შექმნა
 function buildCategoryFilters() {
     const container = document.querySelector('.cat-pills-container');
     if (!container) return;
-
-    // პოულობს ყველა უნიკალურ კატეგორიას, რაც რეალურად წერია შიტში
     const categories = [...new Set(menu.map(item => item.cat))].filter(c => c);
-
     container.innerHTML = categories.map((cat, index) => {
         return `<div class="cat-pill ${index === 0 ? 'active-cat' : ''}" 
                      data-cat="${cat}" 
@@ -70,7 +65,6 @@ function buildCategoryFilters() {
     }).join('');
 }
 
-// დამხმარე ფუნქცია სურათის/ემოჯის გამოსაჩენად
 function getMediaHtml(val, cls) {
     if (val && val.startsWith('http')) {
         return `<img src="${val}" class="${cls}" alt="dish" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
@@ -90,11 +84,9 @@ function getMediaHtml(val, cls) {
         } else if (dataLoaded && p < 100) {
             p += 5;
         }
-
         var currentP = Math.min(Math.round(p), 100);
         if (bar) bar.style.width = currentP + '%';
         if (pct) pct.textContent = currentP + '%';
-
         if (currentP >= 100) {
             clearInterval(iv);
             var s = document.getElementById('splash');
@@ -108,11 +100,9 @@ function getMediaHtml(val, cls) {
             }
         }
     }, 80);
-
     fetchMenuData();
 })();
 
-// NAVIGATION FUNCTIONS
 function showView(n) {
     prevView = curView; curView = n;
     document.querySelectorAll('.view').forEach(function (v) { v.classList.add('hidden'); v.classList.remove('active'); });
@@ -120,30 +110,63 @@ function showView(n) {
     if (t) { t.classList.remove('hidden'); t.classList.add('active'); t.scrollTop = 0; }
     document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active-nav', b.dataset.nav === n); });
     if (n === 'cart') renderCart();
-    if (n === 'menu') renderMenu(null);
 }
 
 function goBack() { showView(prevView || 'home'); }
-function goToCart() { showView('cart'); }
 
-// DISH DETAIL FUNCTION
+// --- დეტალური გვერდი ოფციებით ---
 function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
 
+    // საწყისი მნიშვნელობების დაყენება
+    selectedOptions = { label: '', extra: 0 };
+    
     document.getElementById('detail-name').textContent = item.name;
     document.getElementById('detail-ka').textContent = item.ka;
     document.getElementById('detail-price').textContent = '₾' + item.price.toFixed(2);
     document.getElementById('detail-desc').textContent = item.desc;
-    
-    const imgCont = document.getElementById('detail-img');
-    imgCont.innerHTML = getMediaHtml(item.emoji, ''); 
-    
+    document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
     document.getElementById('detail-btn-price').textContent = '₾' + item.price.toFixed(2);
+
+    const optionsCont = document.getElementById('size-options-container');
+    const sizeSection = document.getElementById('size-selection');
+    
+    if (optionsCont) optionsCont.innerHTML = '';
+
+    // ოფციების დამუშავება (მაგ: "25სმ:0, 33სმ:7")
+    if (item.options && item.options.includes(':') && sizeSection) {
+        sizeSection.classList.remove('hidden');
+        const optionsArray = item.options.split(',').map(opt => opt.trim());
+        
+        optionsArray.forEach((opt, index) => {
+            const [label, priceAdd] = opt.split(':');
+            const btn = document.createElement('div');
+            btn.className = `size-option ${index === 0 ? 'active' : ''}`;
+            btn.innerHTML = `<div>${label}</div><div style="font-size:10px; opacity:0.6">+₾${parseFloat(priceAdd).toFixed(2)}</div>`;
+            
+            if(index === 0) {
+                selectedOptions = { label: label, extra: parseFloat(priceAdd) };
+            }
+
+            btn.onclick = function() {
+                document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedOptions = { label: label, extra: parseFloat(priceAdd) };
+                
+                const newPrice = item.price + selectedOptions.extra;
+                document.getElementById('detail-price').textContent = '₾' + newPrice.toFixed(2);
+                document.getElementById('detail-btn-price').textContent = '₾' + newPrice.toFixed(2);
+            };
+            optionsCont.appendChild(btn);
+        });
+    } else if (sizeSection) {
+        sizeSection.classList.add('hidden');
+    }
 
     const addBtn = document.getElementById('detail-add-btn');
     addBtn.onclick = function () {
-        addToCart(id);
+        addToCart(id, selectedOptions);
         goBack();
     };
 
@@ -175,28 +198,24 @@ function renderHome(f) {
           <div style="position:relative; height:140px;">
             ${getMediaHtml(d.emoji, 'dish-img')}
             ${d.bs ? '<span class="bsb">BEST SELLER</span>' : ''}
-            <button style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,.9);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px" onclick="event.stopPropagation()">♡</button>
           </div>
           <div class="dish-info">
             <p class="dish-name">${d.name}</p>
             <p class="dish-price">₾${d.price.toFixed(2)}</p>
-            <button class="add-btn" onclick="event.stopPropagation();addToCart(${d.id})">+</button>
+            <button class="add-btn" onclick="event.stopPropagation();openProductDetail(${d.id})">+</button>
           </div></div>`;
     }).join('');
 }
 
 function renderMenu(cat, element) {
-    // თუ ფუნქცია გამოიძახა ღილაკზე დაჭერამ
     if (element) {
         document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active-cat'));
         element.classList.add('active-cat');
     }
-
     if (!cat) {
         var ap = document.querySelector('.cat-pill.active-cat');
         cat = ap ? ap.dataset.cat : (menu.length > 0 ? menu[0].cat : '');
     }
-    
     renderMenuItems(menu.filter(function (i) { return i.cat === cat; }));
 }
 
@@ -215,7 +234,7 @@ function renderMenuItems(items) {
             <p class="menu-desc">${i.desc}</p>
             <span class="menu-price">₾${i.price.toFixed(2)}</span>
           </div>
-          <button class="menu-add" onclick="event.stopPropagation();addToCart(${i.id})">+</button>
+          <button class="menu-add" onclick="event.stopPropagation();openProductDetail(${i.id})">+</button>
         </div>`;
     }).join('');
 }
@@ -225,20 +244,35 @@ function getItem(id) {
     return menu.find(function (d) { return d.id === parseInt(id); }); 
 }
 
-function addToCart(id) {
+function addToCart(id, options = { label: '', extra: 0 }) {
     var it = getItem(id); if (!it) return;
-    if (cart[id]) cart[id].qty++; else cart[id] = Object.assign({}, it, { qty: 1 });
+    
+    // ვქმნით უნიკალურ გასაღებს კალათისთვის (სახელი + ზომა)
+    var cartId = options.label ? id + '-' + options.label : id;
+    var finalName = options.label ? it.name + ' (' + options.label + ')' : it.name;
+    var finalPrice = it.price + options.extra;
+
+    if (cart[cartId]) {
+        cart[cartId].qty++;
+    } else {
+        cart[cartId] = {
+            id: it.id,
+            cartId: cartId,
+            name: finalName,
+            price: finalPrice,
+            emoji: it.emoji,
+            qty: 1
+        };
+    }
     badge();
 }
 
-function removeFromCart(id) {
-    if (!cart[id]) return;
-    cart[id].qty--;
-    if (cart[id].qty <= 0) delete cart[id];
+function removeFromCart(cartId) {
+    if (!cart[cartId]) return;
+    cart[cartId].qty--;
+    if (cart[cartId].qty <= 0) delete cart[cartId];
     badge(); renderCart();
 }
-
-function clearCart() { cart = {}; badge(); renderCart(); }
 
 function badge() {
     var t = Object.values(cart).reduce(function (s, i) { return s + i.qty; }, 0);
@@ -264,9 +298,9 @@ function renderCart() {
             <p class="cart-name">${i.name}</p>
             <p class="cart-price">₾${i.price.toFixed(2)}</p>
             <div class="qty-controls">
-              <button class="qty-btn" onclick="removeFromCart(${i.id})">−</button>
+              <button class="qty-btn" onclick="removeFromCart('${i.cartId}')">−</button>
               <span class="qty-val">${i.qty}</span>
-              <button class="qty-btn plus" onclick="addToCart(${i.id});renderCart()">+</button>
+              <button class="qty-btn plus" onclick="addToCart(${i.id}, {label:'${i.name.includes('(') ? i.name.split('(')[1].replace(')','') : ''}', extra: 0});renderCart()">+</button>
             </div></div></div>`;
     }).join('');
     setSummary(items.reduce(function (s, i) { return s + i.price * i.qty; }, 0));
