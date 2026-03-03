@@ -1,38 +1,37 @@
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQeGoclY93Hp89AweBslslTzJrn0G1wJtWkDen1zdOr_QOJvW_hykguzPnh0k8Sn5jtb0XB-1OELaXy/pub?output=csv';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyI-67cqENKBz9kBP5AAQ_cfPxeMnQhRwsy8yM4P47qRm0LpYur64WrFrU43hq-JRyl/exec';
 
 var dishes = []; // პოპულარული კერძებისთვის
 var menu = [];   // სრული მენიუსთვის
 var cart = {}, prevView = 'home', curView = 'home';
 
-// 1. მონაცემების წამოღება Google Sheets-დან
+// 1. მონაცემების წამოღება Google Apps Script-დან
 async function fetchMenuData() {
     try {
-        const response = await fetch(SHEET_CSV_URL);
-        const data = await response.text();
-        const rows = data.split('\n').slice(1);
+        const response = await fetch(SCRIPT_URL);
+        const allData = await response.json();
         
-        const allData = rows.map(row => {
-            const cols = row.split(',');
+        // მონაცემების ფორმატირება (Mapping) შიტის სათაურების მიხედვით
+        const formattedData = allData.map(item => {
             return {
-                id: parseInt(cols[0]),
-                name: cols[1]?.trim(),
-                ka: cols[2]?.trim(),
-                cat: cols[3]?.trim().toLowerCase(),
-                price: parseFloat(cols[4]) || 0,
-                desc: cols[5]?.trim(),
-                emoji: cols[6]?.trim() || "🍽️",
-                bs: cols[7]?.trim().toLowerCase() === 'true'
+                id: parseInt(item.id),
+                name: item.name?.trim(),
+                ka: (item.name_ka || item.ka)?.trim(),
+                cat: (item.category || item.cat)?.trim().toLowerCase(),
+                price: parseFloat(item.price) || 0,
+                desc: (item.description || item.desc)?.trim(),
+                emoji: (item.image || item.emoji)?.trim() || "🍽️",
+                bs: String(item.is_popular || item.bs).toLowerCase() === 'true'
             };
         }).filter(item => item.id);
 
         // ვანაწილებთ მონაცემებს
-        dishes = allData.filter(item => item.bs === true);
-        menu = allData;
+        dishes = formattedData.filter(item => item.bs === true);
+        menu = formattedData;
 
         // საწყისი რენდერი მონაცემების ჩატვირთვის შემდეგ
         renderHome('all');
     } catch (error) {
-        console.error('Error fetching menu:', error);
+        console.error('Error fetching menu via Apps Script:', error);
     }
 }
 
@@ -170,7 +169,9 @@ function renderMenuItems(items) {
 }
 
 // CART LOGIC
-function getItem(id) { return menu.find(function (d) { return d.id === id; }); }
+function getItem(id) { 
+    return menu.find(function (d) { return d.id === parseInt(id); }); 
+}
 
 function addToCart(id) {
     var it = getItem(id); if (!it) return;
