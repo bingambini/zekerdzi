@@ -52,8 +52,8 @@ function processMenuData(allData) {
             bs: String(item.is_popular || item.bs).toLowerCase() === 'true',
             options: getString(item.options),
             extras: getString(item.extras),
-            time: time,    // თუ ცარიელია, იქნება ""
-            weight: rawWeight, // თუ ცარიელია, იქნება ""
+            time: time,    
+            weight: rawWeight, 
             unit: unit
         };
     }).filter(item => item.id);
@@ -132,7 +132,6 @@ function showView(n) {
 
 function goBack() { showView(prevView || 'home'); }
 
-// --- ფასის დინამიური განახლების ფუნქცია ---
 function updateDetailPrice(basePrice) {
     let extraToppingsPrice = 0;
     const checkboxes = document.querySelectorAll('#extras-options-container input[type="checkbox"]:checked');
@@ -145,7 +144,6 @@ function updateDetailPrice(basePrice) {
     document.getElementById('detail-btn-price').textContent = '₾' + total.toFixed(2);
 }
 
-// --- დეტალური გვერდი ოფციებით და დინამიური ექსტრებით ---
 function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
@@ -159,7 +157,6 @@ function openProductDetail(id) {
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
     document.getElementById('detail-btn-price').textContent = '₾' + item.price.toFixed(2);
 
-    // 1. ზომების სექცია
     const optionsCont = document.getElementById('size-options-container');
     const sizeSection = document.getElementById('size-selection');
     if (optionsCont) optionsCont.innerHTML = '';
@@ -199,7 +196,6 @@ function openProductDetail(id) {
         sizeSection.classList.add('hidden');
     }
 
-    // 2. Extra Toppings სექცია
     const extrasCont = document.getElementById('extras-options-container');
     const extrasSection = document.getElementById('extras-selection');
     if (extrasCont) extrasCont.innerHTML = '';
@@ -241,7 +237,6 @@ function openProductDetail(id) {
     showView('item-detail');
 }
 
-// EVENT LISTENERS
 document.querySelectorAll('.nav-btn').forEach(function (b) {
     b.addEventListener('click', function () { showView(b.dataset.nav); });
 });
@@ -256,37 +251,31 @@ if (searchInput) {
     });
 }
 
-// RENDER LOGIC
 function renderHome(f) {
     var list = (f === 'all' || !f) ? dishes : dishes.filter(function (d) { return d.cat === f; });
     var grid = document.getElementById('dishes-grid');
     if (!grid) return;
     
     grid.innerHTML = list.map(function (d) {
-        const timeHtml = d.time ? `<span>⏱ ${d.time} წთ</span>` : '';
-        const weightHtml = d.weight ? `<span>⚖ ${d.weight} ${d.unit}</span>` : '';
-        
-        const metaSection = (timeHtml || weightHtml) 
-            ? `<div class="dish-meta" style="display:flex; gap:12px; font-size:11px; color:#888; margin: 6px 0 14px 0; font-weight: 500;">
-                 ${timeHtml} ${weightHtml}
-               </div>` 
-            : '<div style="margin-bottom: 14px;"></div>';
+        // ბეიჯების ლოგიკა სურათზე
+        const timeBadge = d.time ? `<span style="position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:8px; font-size:10px; backdrop-filter:blur(4px); font-weight:500;">⏱ ${d.time} წთ</span>` : '';
+        const weightBadge = d.weight ? `<span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:8px; font-size:10px; backdrop-filter:blur(4px); font-weight:500;">⚖ ${d.weight}${d.unit}</span>` : '';
 
         return `
-        <div class="dish-card" onclick="openProductDetail(${d.id})" style="display: flex; flex-direction: column;">
+        <div class="dish-card" onclick="openProductDetail(${d.id})" style="display: flex; flex-direction: column; overflow:hidden;">
           <div style="position:relative; height:150px; overflow: hidden; border-radius: 1.5rem 1.5rem 0 0;">
             ${getMediaHtml(d.emoji, 'dish-img')}
-            ${d.bs ? '<span class="bsb" style="top: 12px; left: 12px;">BEST SELLER</span>' : ''}
+            ${d.bs ? '<span class="bsb" style="top: 10px; left: 10px; font-size: 10px; padding: 4px 8px;">BEST SELLER</span>' : ''}
+            ${timeBadge}
+            ${weightBadge}
           </div>
-          <div class="dish-info" style="padding: 16px; display: flex; flex-direction: column; flex-grow: 1;">
-            <p class="dish-name" style="margin: 0; font-weight: 700; font-size: 16px; color: #000;">${d.ka}</p>
-            
-            ${metaSection}
+          <div class="dish-info" style="padding: 12px 14px; display: flex; flex-direction: column; flex-grow: 1;">
+            <p class="dish-name" style="margin: 0 0 10px 0; font-weight: 700; font-size: 15px; color: #000; line-height: 1.2; min-height: 36px;">${d.ka}</p>
 
             <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top: auto;">
-                <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:22px; letter-spacing: -0.5px;">₾${d.price.toFixed(2)}</p>
-                <button class="add-btn" style="position:static; width: 42px; height: 42px; background: #1D6FE8; border-radius: 12px; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="event.stopPropagation();openProductDetail(${d.id})">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:18px; letter-spacing: -0.3px;">₾${d.price.toFixed(2)}</p>
+                <button class="add-btn" style="position:static; width: 36px; height: 36px; background: #1D6FE8; border-radius: 10px; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="event.stopPropagation();openProductDetail(${d.id})">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
@@ -329,7 +318,6 @@ function renderMenuItems(items) {
     }).join('');
 }
 
-// CART LOGIC
 function getItem(id) { 
     return menu.find(function (d) { return d.id === parseInt(id); }); 
 }
