@@ -111,23 +111,49 @@ function handleMethodSelection(method) {
     updateFinalCheckoutPrice();
 }
 
-// --- პრომო კოდის ფუნქცია ---
+// --- პრომო კოდის და ფასის ფუნქციები (განახლებული) ---
+
+function togglePromoField() {
+    const container = document.getElementById('promo-collapsible');
+    const icon = document.getElementById('promo-plus-icon');
+    if (!container) return;
+    
+    if (container.style.maxHeight) {
+        container.style.maxHeight = null;
+        if(icon) icon.textContent = '⊕';
+    } else {
+        container.style.maxHeight = container.scrollHeight + "px";
+        if(icon) icon.textContent = '⊖';
+    }
+}
+
 function applyPromoCode() {
-    const promoInput = document.getElementById('promo-code-input');
-    if (!promoInput) return;
+    const input = document.getElementById('promo-input');
+    const errorMsg = document.getElementById('promo-error-msg');
+    if (!input) return;
     
-    const code = promoInput.value.trim().toUpperCase();
+    const code = input.value.trim().toUpperCase();
     
-    // აქ განსაზღვრავ მოქმედ კოდებს
-    if (code === 'PROMO10') {
-        currentDiscount = 0.10; // 10% ფასდაკლება
-        alert("პრომო კოდი 'PROMO10' გააქტიურდა! (-10%)");
-    } else if (code === 'WELCOME') {
+    if (code === 'WELCOME') {
         currentDiscount = 5; // 5 ლარიანი ფასდაკლება
-        alert("პრომო კოდი 'WELCOME' გააქტიურდა! (-5₾)");
+        input.classList.remove('border-transparent', 'border-red-500');
+        input.classList.add('border-green-500', 'bg-green-50');
+        if(errorMsg) errorMsg.classList.add('hidden');
+        
+        const okBtn = input.nextElementSibling;
+        if(okBtn) {
+            okBtn.disabled = true;
+            okBtn.classList.replace('bg-[#1D6FE8]', 'bg-green-500');
+            okBtn.textContent = '✓';
+        }
     } else {
         currentDiscount = 0;
-        alert("არასწორი პრომო კოდი");
+        input.classList.remove('border-transparent', 'border-green-500');
+        input.classList.add('border-red-500');
+        if(errorMsg) errorMsg.classList.remove('hidden');
+        
+        input.classList.add('animate-bounce');
+        setTimeout(() => input.classList.remove('animate-bounce'), 500);
     }
     
     updateFinalCheckoutPrice();
@@ -137,18 +163,29 @@ function updateFinalCheckoutPrice() {
     let subtotal = Object.values(cart).reduce((s, i) => s + (i.price * i.qty), 0);
     let deliveryFee = (currentOrderMethod === 'delivery') ? 2.50 : 0;
     let serviceFee = subtotal > 0 ? 1.00 : 0;
+    let totalBeforeDiscount = subtotal + deliveryFee + serviceFee;
     
-    // ფასდაკლების გამოკლება (თუ 1-ზე ნაკლებია = %, თუ მეტია = ფიქსირებული ლარი)
-    let discountAmount = 0;
-    if (currentDiscount > 0) {
-        discountAmount = (currentDiscount < 1) ? (subtotal * currentDiscount) : currentDiscount;
-    }
-    
-    let total = subtotal + deliveryFee + serviceFee - discountAmount;
-    if (total < 0) total = 0;
+    const priceStack = document.getElementById('price-stack');
+    if (!priceStack) return;
 
-    const finalPriceEl = document.getElementById('final-total-price');
-    if (finalPriceEl) finalPriceEl.textContent = '₾' + total.toFixed(2);
+    if (currentDiscount > 0) {
+        let finalTotal = totalBeforeDiscount - currentDiscount;
+        if (finalTotal < 0) finalTotal = 0;
+
+        priceStack.innerHTML = `
+            <span class="text-[11px] text-[#888] line-through font-bold">₾${totalBeforeDiscount.toFixed(2)}</span>
+            <div class="flex items-center text-green-600 font-bold text-[11px] -mt-1">
+                <span>-₾${currentDiscount.toFixed(2)}</span>
+            </div>
+            <div class="border-t border-[#0D0D0D] mt-0.5 pt-0.5 w-fit">
+                <span id="final-total-price" class="text-xl font-black text-[#1D6FE8]">₾${finalTotal.toFixed(2)}</span>
+            </div>
+        `;
+    } else {
+        priceStack.innerHTML = `
+            <span id="final-total-price" class="text-xl font-black text-[#0D0D0D]">₾${totalBeforeDiscount.toFixed(2)}</span>
+        `;
+    }
 }
 
 function submitFinalOrder() {
