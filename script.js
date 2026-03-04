@@ -5,8 +5,9 @@ var menu = [];
 var cart = {}, prevView = 'home', curView = 'home';
 var dataLoaded = false; 
 
-// ცვლადი არჩეული ზომის შესანახად
+// ცვლადები დეტალური გვერდისთვის
 var selectedOptions = { label: '', extra: 0 };
+var detailQty = 1; 
 
 async function fetchMenuData() {
     const cache = localStorage.getItem('menu_cache');
@@ -29,7 +30,6 @@ async function fetchMenuData() {
 
 function processMenuData(allData) {
     const formattedData = allData.map(item => {
-        // უსაფრთხო ტექსტური კონვერტაცია (TypeError-ის თავიდან ასაცილებლად)
         const getString = (val) => (val !== undefined && val !== null) ? String(val).trim() : "";
         
         let rawWeight = getString(item.weight);
@@ -70,67 +70,16 @@ function processMenuData(allData) {
     }
 }
 
-function buildCategoryFilters() {
-    const container = document.querySelector('.cat-pills-container');
-    if (!container) return;
-    const categories = [...new Set(menu.map(item => item.cat))].filter(c => c);
-    container.innerHTML = categories.map((cat, index) => {
-        return `<div class="cat-pill ${index === 0 ? 'active-cat' : ''}" 
-                     data-cat="${cat}" 
-                     onclick="renderMenu('${cat}', this)">
-                     ${cat}
-                </div>`;
-    }).join('');
-}
-
-function getMediaHtml(val, cls) {
-    if (val && val.startsWith('http')) {
-        return `<img src="${val}" class="${cls}" alt="dish" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
-    }
-    return `<div class="${cls}">${val}</div>`;
-}
-
-// OPTIMIZED SPLASH LOGIC
-(function () {
-    var bar = document.getElementById('splash-bar');
-    var pct = document.getElementById('splash-pct');
-    var p = 0;
+// --- რაოდენობის მართვის ფუნქციები დეტალურ გვერდზე ---
+function changeDetailQty(amount) {
+    detailQty += amount;
+    if (detailQty < 1) detailQty = 1;
+    document.getElementById('detail-qty-val').textContent = detailQty;
     
-    var iv = setInterval(function () {
-        if (p < 85) {
-            p += Math.random() * 5;
-        } else if (dataLoaded && p < 100) {
-            p += 5;
-        }
-        var currentP = Math.min(Math.round(p), 100);
-        if (bar) bar.style.width = currentP + '%';
-        if (pct) pct.textContent = currentP + '%';
-        if (currentP >= 100) {
-            clearInterval(iv);
-            var s = document.getElementById('splash');
-            if (s) {
-                s.style.opacity = '0';
-                s.style.transition = 'opacity 0.5s ease';
-                setTimeout(function () {
-                    s.style.display = 'none';
-                    document.getElementById('app').classList.remove('hidden');
-                }, 500);
-            }
-        }
-    }, 80);
-    fetchMenuData();
-})();
-
-function showView(n) {
-    prevView = curView; curView = n;
-    document.querySelectorAll('.view').forEach(function (v) { v.classList.add('hidden'); v.classList.remove('active'); });
-    var t = document.getElementById('view-' + n);
-    if (t) { t.classList.remove('hidden'); t.classList.add('active'); t.scrollTop = 0; }
-    document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active-nav', b.dataset.nav === n); });
-    if (n === 'cart') renderCart();
+    // განვაახლოთ ფასი ღილაკზე
+    const item = getItem(window.currentDetailId);
+    if (item) updateDetailPrice(item.price);
 }
-
-function goBack() { showView(prevView || 'home'); }
 
 function updateDetailPrice(basePrice) {
     let extraToppingsPrice = 0;
@@ -139,8 +88,10 @@ function updateDetailPrice(basePrice) {
         extraToppingsPrice += parseFloat(cb.getAttribute('data-price')) || 0;
     });
 
-    const total = basePrice + selectedOptions.extra + extraToppingsPrice;
-    document.getElementById('detail-price').textContent = '₾' + total.toFixed(2);
+    const unitPrice = basePrice + selectedOptions.extra + extraToppingsPrice;
+    const total = unitPrice * detailQty;
+    
+    document.getElementById('detail-price').textContent = '₾' + unitPrice.toFixed(2);
     document.getElementById('detail-btn-price').textContent = '₾' + total.toFixed(2);
 }
 
@@ -148,15 +99,28 @@ function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
 
+    window.currentDetailId = id; // შევინახოთ მიმდინარე ID
     selectedOptions = { label: '', extra: 0 };
+    detailQty = 1; 
+    document.getElementById('detail-qty-val').textContent = detailQty;
     
-    document.getElementById('detail-name').textContent = item.name;
+    // სახელები: ქართული (დიდი) და ინგლისური (პატარა)
     document.getElementById('detail-ka').textContent = item.ka;
-    document.getElementById('detail-price').textContent = '₾' + item.price.toFixed(2);
+    document.getElementById('detail-name').textContent = item.name;
+    
     document.getElementById('detail-desc').textContent = item.desc;
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
-    document.getElementById('detail-btn-price').textContent = '₾' + item.price.toFixed(2);
 
+    // ბეიჯების პირობითი გამოჩენა
+    const badgeCont = document.getElementById('detail-badges-container');
+    if (badgeCont) {
+        let badgesHtml = '<div class="d-badge">⭐ 4.9</div>';
+        if (item.time) badgesHtml += `<div class="d-badge">⏱ ${item.time} წთ</div>`;
+        if (item.weight) badgesHtml += `<div class="d-badge">⚖ ${item.weight} ${item.unit}</div>`;
+        badgeCont.innerHTML = badgesHtml;
+    }
+
+    // ზომების და ექსტრების სექცია
     const optionsCont = document.getElementById('size-options-container');
     const sizeSection = document.getElementById('size-selection');
     if (optionsCont) optionsCont.innerHTML = '';
@@ -220,6 +184,7 @@ function openProductDetail(id) {
 
     updateDetailPrice(item.price);
 
+    // დამატების ღილაკი ეფექტით
     const addBtn = document.getElementById('detail-add-btn');
     addBtn.onclick = function () {
         const selectedExtras = [];
@@ -230,26 +195,88 @@ function openProductDetail(id) {
             });
         });
         
-        addToCart(id, selectedOptions, selectedExtras);
-        goBack();
+        // დამატება მითითებული რაოდენობით
+        for(let i=0; i < detailQty; i++) {
+            addToCart(id, selectedOptions, selectedExtras);
+        }
+
+        // ეფექტი და გადასვლა
+        const originalContent = addBtn.innerHTML;
+        addBtn.style.background = '#28a745';
+        addBtn.innerHTML = '✓ დაემატა კალათაში';
+        
+        setTimeout(() => {
+            addBtn.style.background = '#1D6FE8';
+            addBtn.innerHTML = originalContent;
+            showView('cart');
+        }, 600);
     };
 
     showView('item-detail');
 }
 
-document.querySelectorAll('.nav-btn').forEach(function (b) {
-    b.addEventListener('click', function () { showView(b.dataset.nav); });
-});
+// დანარჩენი ფუნქციები (getMediaHtml, renderHome, renderCart და ა.შ. რჩება უცვლელი)
 
-const searchInput = document.getElementById('menu-search');
-if (searchInput) {
-    searchInput.addEventListener('input', function (e) {
-        var q = e.target.value.toLowerCase();
-        renderMenuItems(menu.filter(function (i) { 
-            return i.name.toLowerCase().includes(q) || (i.ka && i.ka.toLowerCase().includes(q)); 
-        }));
-    });
+function buildCategoryFilters() {
+    const container = document.querySelector('.cat-pills-container');
+    if (!container) return;
+    const categories = [...new Set(menu.map(item => item.cat))].filter(c => c);
+    container.innerHTML = categories.map((cat, index) => {
+        return `<div class="cat-pill ${index === 0 ? 'active-cat' : ''}" 
+                     data-cat="${cat}" 
+                     onclick="renderMenu('${cat}', this)">
+                     ${cat}
+                </div>`;
+    }).join('');
 }
+
+function getMediaHtml(val, cls) {
+    if (val && val.startsWith('http')) {
+        return `<img src="${val}" class="${cls}" alt="dish" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
+    }
+    return `<div class="${cls}">${val}</div>`;
+}
+
+(function () {
+    var bar = document.getElementById('splash-bar');
+    var pct = document.getElementById('splash-pct');
+    var p = 0;
+    
+    var iv = setInterval(function () {
+        if (p < 85) {
+            p += Math.random() * 5;
+        } else if (dataLoaded && p < 100) {
+            p += 5;
+        }
+        var currentP = Math.min(Math.round(p), 100);
+        if (bar) bar.style.width = currentP + '%';
+        if (pct) pct.textContent = currentP + '%';
+        if (currentP >= 100) {
+            clearInterval(iv);
+            var s = document.getElementById('splash');
+            if (s) {
+                s.style.opacity = '0';
+                s.style.transition = 'opacity 0.5s ease';
+                setTimeout(function () {
+                    s.style.display = 'none';
+                    document.getElementById('app').classList.remove('hidden');
+                }, 500);
+            }
+        }
+    }, 80);
+    fetchMenuData();
+})();
+
+function showView(n) {
+    prevView = curView; curView = n;
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.add('hidden'); v.classList.remove('active'); });
+    var t = document.getElementById('view-' + n);
+    if (t) { t.classList.remove('hidden'); t.classList.add('active'); t.scrollTop = 0; }
+    document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active-nav', b.dataset.nav === n); });
+    if (n === 'cart') renderCart();
+}
+
+function goBack() { showView(prevView || 'home'); }
 
 function renderHome(f) {
     var list = (f === 'all' || !f) ? dishes : dishes.filter(function (d) { return d.cat === f; });
@@ -268,14 +295,10 @@ function renderHome(f) {
             ${timeBadge}
             ${weightBadge}
           </div>
-
           <div class="dish-info" style="padding: 15px; display: flex; flex-direction: column; flex: 1; justify-content: flex-start;">
-            
             <p class="dish-name" style="margin: 0; font-weight: 700; font-size: 15px; color: #000; line-height: 1.2;">${d.ka}</p>
-
             <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center; width:100%;">
                 <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:18px; letter-spacing: -0.3px;">₾${d.price.toFixed(2)}</p>
-                
                 <button class="add-btn" style="position:static; width: 28px; height: 28px; background: #1D6FE8; border-radius: 8px; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="event.stopPropagation();openProductDetail(${d.id})">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
