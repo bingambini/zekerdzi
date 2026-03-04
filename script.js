@@ -75,7 +75,6 @@ function changeDetailQty(amount) {
     detailQty += amount;
     if (detailQty < 1) detailQty = 1;
     
-    // ვპოულობთ რაოდენობის ელემენტს (HTML-ში span-ია ბტნ-ებს შორის)
     const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
     if (qtyEl) qtyEl.textContent = detailQty;
     
@@ -105,7 +104,6 @@ function openProductDetail(id) {
     selectedOptions = { label: '', extra: 0 };
     detailQty = 1; 
     
-    // ვანახლებთ რაოდენობას ვიზუალურად
     const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
     if (qtyEl) qtyEl.textContent = detailQty;
     
@@ -114,14 +112,12 @@ function openProductDetail(id) {
     document.getElementById('detail-desc').textContent = item.desc;
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
 
-    // ბეიჯების მართვა
     const badges = document.querySelectorAll('#view-item-detail .bg-white.px-3.py-1.5.rounded-full');
     if(badges.length >= 3) {
         badges[1].innerHTML = `⏱️ ${item.time || '20-30'} MIN`;
         badges[2].innerHTML = `⚖️ ${item.weight || '450'}${item.unit || 'G'}`;
     }
 
-    // ზომების სექცია
     const optionsCont = document.getElementById('size-options-container');
     const sizeSection = document.getElementById('size-selection');
     if (optionsCont) optionsCont.innerHTML = '';
@@ -155,7 +151,6 @@ function openProductDetail(id) {
         sizeSection.classList.add('hidden');
     }
 
-    // ექსტრების სექცია
     const extrasCont = document.getElementById('extras-options-container');
     const extrasSection = document.getElementById('extras-selection');
     if (extrasCont) extrasCont.innerHTML = '';
@@ -178,7 +173,6 @@ function openProductDetail(id) {
         extrasSection.classList.add('hidden');
     }
 
-    // რაოდენობის ღილაკების დაკავშირება
     const qtyBtns = document.querySelectorAll('#view-item-detail .fixed button');
     if(qtyBtns.length >= 2) {
         qtyBtns[0].onclick = () => changeDetailQty(-1);
@@ -283,7 +277,7 @@ function renderHome(f) {
     
     grid.innerHTML = list.map(function (d) {
         return `
-        <div class="dish-card bg-white rounded-3xl overflow-hidden shadow-sm flex flex-col h-full" onclick="openProductDetail(${d.id})">
+        <div class="dish-card bg-white rounded-3xl overflow-hidden shadow-sm flex flex-col h-full cursor-pointer" onclick="openProductDetail(${d.id})">
           <div class="relative h-32 overflow-hidden">
             ${getMediaHtml(d.emoji, 'w-full h-full object-cover')}
             ${d.bs ? '<span class="absolute top-2 left-2 bg-[#C9A84C] text-[#0D0D0D] text-[8px] font-bold px-2 py-1 rounded-full uppercase">Best Seller</span>' : ''}
@@ -317,7 +311,7 @@ function renderMenuItems(items) {
     if (!items.length) { el.innerHTML = '<p class="text-center text-[#AAA] py-10">No dishes found</p>'; return; }
     el.innerHTML = items.map(function (i) {
         return `
-        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm" onclick="openProductDetail(${i.id})">
+        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm cursor-pointer" onclick="openProductDetail(${i.id})">
           <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
             ${getMediaHtml(i.emoji, 'w-full h-full object-cover')}
           </div>
