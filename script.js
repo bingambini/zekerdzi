@@ -188,16 +188,59 @@ function updateFinalCheckoutPrice() {
     }
 }
 
-function submitFinalOrder() {
-    const name = document.getElementById('checkout-name').value;
-    const phone = document.getElementById('checkout-phone').value;
+async function submitFinalOrder() {
+    const nameInput = document.getElementById('checkout-name');
+    const phoneInput = document.getElementById('checkout-phone');
+    const totalElement = document.getElementById('final-total-price');
+
+    // 1. მონაცემების ამოღება და ვალიდაცია
+    const name = nameInput ? nameInput.value.trim() : "";
+    const phone = phoneInput ? phoneInput.value.trim() : "";
     
-    if(!name || !phone) {
-        alert("გთხოვთ შეავსოთ სახელი და ნომერი");
+    if (!name || !phone) {
+        alert("გთხოვთ შეავსოთ სახელი და ნომერი!");
         return;
     }
+
+    // 2. თანხის მომზადება (სიმბოლოების მოცილება)
+    const totalAmount = totalElement.textContent.replace('₾', '').trim();
     
-    alert("შეკვეთა მუშავდება! მეთოდი: " + currentOrderMethod);
+    if (parseFloat(totalAmount) <= 0) {
+        alert("კალათა ცარიელია!");
+        return;
+    }
+
+    // 3. ვიზუალური დასტური მომხმარებლისთვის
+    const confirmBtn = document.querySelector('.confirm-btn');
+    const originalText = confirmBtn.textContent;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "კავშირი ბანკთან...";
+
+    try {
+        // !!! აქ ჩასვი შენი Google Apps Script-ის "Exec" ლინკი !!!
+        const SCRIPT_URL = "შენი_ახალი_DEPLOY_URL_აქ"; 
+
+        // 4. მოთხოვნა ბანკის გადახდის ლინკზე (GET მოთხოვნა action=payment-ით)
+        const response = await fetch(`${SCRIPT_URL}?action=payment&amount=${totalAmount}`);
+        
+        if (!response.ok) throw new Error("სერვერმა დააბრუნა შეცდომა");
+        
+        const data = await response.json();
+
+        if (data.payment_url) {
+            // 5. გადაყვანა საქართველოს ბანკის ოფიციალურ სატესტო გვერდზე
+            window.location.href = data.payment_url;
+        } else {
+            alert("შეცდომა: " + (data.error || "ბანკმა ვერ დააგენერირა ლინკი"));
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = originalText;
+        }
+    } catch (error) {
+        console.error("Payment Fetch Error:", error);
+        alert("ბანკთან კავშირი ვერ დამყარდა. შეამოწმეთ ინტერნეტი ან სკრიპტის ლინკი.");
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
+    }
 }
 
 // --- რაოდენობის მართვის ფუნქციები დეტალურ გვერდზე ---
