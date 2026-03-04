@@ -9,6 +9,7 @@ var dataLoaded = false;
 var selectedOptions = { label: '', extra: 0 };
 var selectedExtras = {}; // ახალი ობიექტი დანამატების რაოდენობისთვის
 var detailQty = 1; 
+let currentOrderMethod = 'delivery'; // მეთოდის გლობალური ცვლადი
 
 async function fetchMenuData() {
     const cache = localStorage.getItem('menu_cache');
@@ -69,6 +70,66 @@ function processMenuData(allData) {
         const uniqueCats = [...new Set(menu.map(i => i.cat))].filter(c => c);
         if (uniqueCats.length > 0) renderMenu(uniqueCats[0]);
     }
+}
+
+// --- Checkout & Bottom Sheet ფუნქციები ---
+
+function openCheckoutFlow() {
+    const overlay = document.getElementById('checkout-sheet-overlay');
+    const sheet = document.getElementById('checkout-sheet');
+    if (!overlay || !sheet) return;
+    
+    overlay.classList.remove('hidden');
+    setTimeout(() => {
+        overlay.classList.add('opacity-100');
+        sheet.classList.remove('translate-y-full');
+    }, 10);
+}
+
+function closeCheckoutSheet() {
+    const overlay = document.getElementById('checkout-sheet-overlay');
+    const sheet = document.getElementById('checkout-sheet');
+    if (!overlay || !sheet) return;
+
+    overlay.classList.remove('opacity-100');
+    sheet.classList.add('translate-y-full');
+    setTimeout(() => overlay.classList.add('hidden'), 300);
+}
+
+function handleMethodSelection(method) {
+    currentOrderMethod = method;
+    closeCheckoutSheet();
+    
+    const addrSection = document.getElementById('address-section');
+    if (addrSection) {
+        if (method === 'takeaway') addrSection.classList.add('hidden');
+        else addrSection.classList.remove('hidden');
+    }
+    
+    showView('checkout-full');
+    updateFinalCheckoutPrice();
+}
+
+function updateFinalCheckoutPrice() {
+    let subtotal = Object.values(cart).reduce((s, i) => s + (i.price * i.qty), 0);
+    let deliveryFee = (currentOrderMethod === 'delivery') ? 2.50 : 0;
+    let serviceFee = subtotal > 0 ? 1.00 : 0;
+    
+    let total = subtotal + deliveryFee + serviceFee;
+    const finalPriceEl = document.getElementById('final-total-price');
+    if (finalPriceEl) finalPriceEl.textContent = '₾' + total.toFixed(2);
+}
+
+function submitFinalOrder() {
+    const name = document.getElementById('checkout-name').value;
+    const phone = document.getElementById('checkout-phone').value;
+    
+    if(!name || !phone) {
+        alert("გთხოვთ შეავსოთ სახელი და ნომერი");
+        return;
+    }
+    
+    alert("შეკვეთა მუშავდება! მეთოდი: " + currentOrderMethod);
 }
 
 // --- რაოდენობის მართვის ფუნქციები დეტალურ გვერდზე ---
@@ -389,7 +450,6 @@ function getItem(id) {
 function addToCart(id, options = { label: '', extra: 0 }, extras = []) {
     var it = getItem(id); if (!it) return;
     
-    // ქართული სახელის ფორმირება დანამატების რაოდენობით
     var extrasKey = extras.map(e => e.label + 'x' + e.qty).sort().join('|');
     var cartId = id + '-' + (options.label || 'std') + '-' + extrasKey;
     
