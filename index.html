@@ -96,30 +96,24 @@
           </div>
           <div id="detail-price" class="text-2xl font-bold text-[#1D6FE8]">₾0.00</div>
         </div>
-        
         <div id="detail-badges-container" class="flex gap-3 mt-4 mb-6"></div>
-
         <div class="mb-8">
           <h2 class="text-lg font-display font-bold mb-2 uppercase text-[12px] tracking-widest text-[#888]">აღწერა</h2>
           <p id="detail-desc" class="text-[#555] leading-relaxed text-sm">Description text.</p>
         </div>
-
         <div id="size-selection" class="mb-8 hidden">
           <h2 class="text-lg font-display font-bold mb-4">აირჩიეთ ზომა</h2>
           <div id="size-options-container" class="grid grid-cols-2 gap-3"></div>
         </div>
-
         <div id="extras-selection" class="mb-8 hidden">
           <h2 class="text-lg font-display font-bold mb-4">დამატებითი ინგრედიენტები</h2>
           <div id="extras-options-container" class="space-y-3"></div>
         </div>
-
         <div class="mb-4">
           <h2 class="text-lg font-display font-bold mb-3">შენიშვნა</h2>
           <textarea class="w-full bg-white border border-[#EEE] rounded-2xl p-4 text-sm placeholder:text-[#BBB] resize-none min-h-[100px]" placeholder="მაგ: მწვანილი არ მინდა..."></textarea>
         </div>
       </div>
-
       <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-[#F0F0F0] px-5 py-4 z-50">
         <div class="flex items-center gap-4 max-w-sm mx-auto">
           <div class="flex items-center bg-[#F5F3EF] rounded-2xl p-1 h-14">
@@ -165,26 +159,53 @@
     </div>
 
     <div id="view-orders" class="view hidden">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
-        <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </button>
-        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">Orders</h2>
-        <div class="w-9"></div>
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
+        <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Orders History</h2>
       </div>
       <div class="px-5 mt-10 text-center">
-        <p class="text-[#888]">No active orders yet.</p>
+        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <svg class="w-10 h-10 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <h3 class="text-[#0D0D0D] font-bold">No orders yet</h3>
+        <p class="text-[#888] text-sm mt-2">Hungry? Your previous orders will appear here once you place them.</p>
+        <button onclick="showView('menu')" class="mt-6 text-[#1D6FE8] font-bold text-sm uppercase tracking-widest">Explore Menu</button>
       </div>
     </div>
 
     <div id="view-profile" class="view hidden">
       <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
-        <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Profile</h2>
+        <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">My Profile</h2>
       </div>
-      <div class="px-5 mt-5">
-        <div class="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 class="font-bold">Guest User</h3>
-          <p class="text-sm text-[#888]">Settings & Preferences</p>
+      <div class="px-5 mt-6">
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-[#F0F0F0] flex items-center gap-4">
+          <div class="w-16 h-16 bg-[#1D6FE8] rounded-2xl flex items-center justify-center text-white text-2xl font-bold">S</div>
+          <div>
+            <h3 class="text-lg font-bold text-[#0D0D0D]">Saba K.</h3>
+            <p class="text-sm text-[#888]">Guest Account</p>
+          </div>
+        </div>
+        <div class="mt-6 space-y-3">
+          <button class="w-full bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">📍</span>
+              <span class="font-medium text-sm">Delivery Addresses</span>
+            </div>
+            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <button class="w-full bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">💳</span>
+              <span class="font-medium text-sm">Payment Methods</span>
+            </div>
+            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <button class="w-full bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">⚙️</span>
+              <span class="font-medium text-sm">Settings</span>
+            </div>
+            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
         </div>
       </div>
     </div>
