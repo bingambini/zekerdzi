@@ -22,7 +22,6 @@
     </div>
     <div class="w-64 mt-12">
       <p class="text-[#555] text-xs uppercase tracking-widest mb-3">Initialising</p>
-      <p class="text-white text-sm mb-3">Preparing your table...</p>
       <div class="h-1 bg-[#222] rounded-full overflow-hidden">
         <div id="splash-bar" class="h-full bg-[#1D6FE8] rounded-full" style="width:0%;transition:width .05s linear"></div>
       </div>
@@ -86,60 +85,49 @@
           </button>
           <div class="flex gap-2">
             <button class="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-lg text-red-500 text-xl">♥</button>
-            <button class="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-lg">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6a3 3 0 100-2.684m0 2.684l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-            </button>
           </div>
         </div>
       </div>
       <div class="relative -mt-6 bg-[#F5F3EF] rounded-t-3xl px-5 pt-8 pb-32">
         <div class="flex justify-between items-start mb-2">
           <div>
-            <h1 id="detail-name" class="text-3xl font-display font-bold text-[#0D0D0D]">Dish Name</h1>
-            <p id="detail-ka" class="text-[#888] mt-1 italic">Georgian Subtitle</p>
+            <h1 id="detail-ka" class="text-3xl font-display font-bold text-[#0D0D0D]">სახელი</h1>
+            <p id="detail-name" class="text-[#888] mt-1 italic tracking-wide">English Name</p>
           </div>
           <div id="detail-price" class="text-2xl font-bold text-[#1D6FE8]">₾0.00</div>
         </div>
-        <div class="flex gap-4 mt-4 mb-6 text-xs font-bold uppercase tracking-widest">
-          <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm text-amber-500">⭐ 4.9</div>
-          <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm text-[#555]">⏱️ 20-30 MIN</div>
-          <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm text-[#555]">⚖️ 450G</div>
-        </div>
+        
+        <div id="detail-badges-container" class="flex gap-3 mt-4 mb-6"></div>
+
         <div class="mb-8">
-          <h2 class="text-lg font-display font-bold mb-2">Description</h2>
-          <p id="detail-desc" class="text-[#555] leading-relaxed text-sm">Description text goes here.</p>
+          <h2 class="text-lg font-display font-bold mb-2 uppercase text-[12px] tracking-widest text-[#888]">აღწერა</h2>
+          <p id="detail-desc" class="text-[#555] leading-relaxed text-sm">Description text.</p>
         </div>
 
         <div id="size-selection" class="mb-8 hidden">
-          <div class="flex justify-between items-end mb-4">
-            <h2 class="text-lg font-display font-bold">აირჩიეთ ზომა</h2>
-            <span class="text-[10px] font-bold text-[#1D6FE8] uppercase tracking-widest">Pizza Size</span>
-          </div>
+          <h2 class="text-lg font-display font-bold mb-4">აირჩიეთ ზომა</h2>
           <div id="size-options-container" class="grid grid-cols-2 gap-3"></div>
         </div>
 
         <div id="extras-selection" class="mb-8 hidden">
-          <div class="flex justify-between items-end mb-4">
-            <h2 class="text-lg font-display font-bold">Extra Toppings</h2>
-            <span class="text-[10px] font-bold text-[#AAA] uppercase tracking-widest">Optional</span>
-          </div>
-          <div id="extras-options-container" class="space-y-3">
-             </div>
+          <h2 class="text-lg font-display font-bold mb-4">დამატებითი ინგრედიენტები</h2>
+          <div id="extras-options-container" class="space-y-3"></div>
         </div>
 
         <div class="mb-4">
-          <h2 class="text-lg font-display font-bold mb-3">Special Requests</h2>
-          <textarea class="w-full bg-white border border-[#EEE] rounded-2xl p-4 text-sm placeholder:text-[#BBB] resize-none min-h-[100px]" placeholder="Add a note..."></textarea>
+          <h2 class="text-lg font-display font-bold mb-3">შენიშვნა</h2>
+          <textarea class="w-full bg-white border border-[#EEE] rounded-2xl p-4 text-sm placeholder:text-[#BBB] resize-none min-h-[100px]" placeholder="მაგ: მწვანილი არ მინდა..."></textarea>
         </div>
       </div>
+
       <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-[#F0F0F0] px-5 py-4 z-50">
         <div class="flex items-center gap-4 max-w-sm mx-auto">
           <div class="flex items-center bg-[#F5F3EF] rounded-2xl p-1 h-14">
-            <button class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">−</button>
-            <span class="w-8 text-center font-bold">1</span>
-            <button class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">+</button>
+            <button onclick="changeDetailQty(-1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">−</button>
+            <span id="detail-qty-val" class="w-8 text-center font-bold">1</span>
+            <button onclick="changeDetailQty(1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">+</button>
           </div>
-          <button id="detail-add-btn" class="flex-1 bg-[#1D6FE8] text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#1D6FE8]/20 active:scale-[0.98] transition-transform">
+          <button id="detail-add-btn" class="flex-1 bg-[#1D6FE8] text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#1D6FE8]/20 active:scale-[0.98] transition-all">
             <span>Add to Order</span>
             <span class="opacity-60">•</span>
             <span id="detail-btn-price">₾0.00</span>
@@ -176,120 +164,8 @@
       </div>
     </div>
 
-    <div id="view-orders" class="view hidden">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
-        <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </button>
-        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">Order History</h2>
-        <div class="w-9"></div>
-      </div>
-      <div class="mx-5 mt-2 bg-white rounded-xl p-1 flex shadow-sm">
-        <button class="flex-1 py-2 text-sm rounded-lg bg-white shadow text-[#1D6FE8] font-semibold">Current</button>
-        <button class="flex-1 py-2 text-sm text-[#888]">Past</button>
-      </div>
-      <div class="mx-5 mt-5">
-        <p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3">Ongoing Orders</p>
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div class="px-4 pt-4">
-            <span class="text-[#1D6FE8] text-xs font-bold uppercase tracking-wider">In Progress</span>
-            <div class="flex items-center justify-between mt-1">
-              <div><p class="font-bold text-[#0D0D0D]">Order #8821</p><p class="text-xs text-[#888]">Today, 14:20 · 3 items</p></div>
-              <div class="w-10 h-10 bg-[#EEF3FD] rounded-xl flex items-center justify-center">
-                <svg class="w-5 h-5 text-[#1D6FE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18M3 9h18M3 15h18M3 21h18"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="map-ph mx-4 mt-3 rounded-xl h-36 bg-[#EEE] flex items-center justify-center text-[#AAA] text-xs uppercase tracking-widest">Map Placeholder</div>
-          <div class="px-4 py-4">
-            <button class="w-full bg-[#1D6FE8] text-white rounded-xl py-3 text-sm font-semibold">Track Delivery</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="view-profile" class="view hidden">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
-        <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">My Profile</h2>
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm active:scale-95 transition-transform">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        </button>
-      </div>
-
-      <div class="px-5">
-        <div class="flex items-center gap-4 mt-6">
-          <div class="relative">
-            <div class="w-20 h-20 rounded-2xl bg-[#0D0D0D] flex items-center justify-center text-3xl border-4 border-white shadow-xl">👤</div>
-            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-[#1D6FE8] rounded-full border-2 border-white flex items-center justify-center">
-              <span class="text-white text-[10px]">✔</span>
-            </div>
-          </div>
-          <div>
-            <h3 class="text-xl font-bold text-[#0D0D0D]">Saba K.</h3>
-            <p class="text-sm text-[#888]">Member since 2024</p>
-          </div>
-        </div>
-
-        <div class="mt-8 bg-gradient-to-br from-[#1D6FE8] to-[#154fa3] rounded-3xl p-6 shadow-lg shadow-[#1D6FE8]/20 relative overflow-hidden">
-          <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
-              <span class="text-[120px] font-bold text-white">Z</span>
-          </div>
-          <div class="relative z-10">
-            <p class="text-white/70 text-[10px] uppercase tracking-[0.2em] font-bold">Z-Points Balance</p>
-            <div class="flex items-baseline gap-2 mt-1">
-              <h4 class="text-white text-4xl font-display font-bold">1,250</h4>
-              <span class="text-white/80 text-sm">pts</span>
-            </div>
-            <div class="mt-6 flex justify-between items-end">
-              <div class="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
-                <p class="text-white text-[10px] font-medium">Gold Status</p>
-              </div>
-              <button class="bg-white text-[#1D6FE8] text-xs font-bold px-4 py-2 rounded-xl shadow-sm">Redeem</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3 mt-6">
-          <div class="bg-white p-3 rounded-2xl text-center shadow-sm">
-            <p class="text-[10px] text-[#AAA] uppercase font-bold">Orders</p>
-            <p class="text-lg font-bold text-[#0D0D0D]">24</p>
-          </div>
-          <div class="bg-white p-3 rounded-2xl text-center shadow-sm">
-            <p class="text-[10px] text-[#AAA] uppercase font-bold">Favorites</p>
-            <p class="text-lg font-bold text-[#0D0D0D]">12</p>
-          </div>
-          <div class="bg-white p-3 rounded-2xl text-center shadow-sm">
-            <p class="text-[10px] text-[#AAA] uppercase font-bold">Reviews</p>
-            <p class="text-lg font-bold text-[#0D0D0D]">5</p>
-          </div>
-        </div>
-
-        <div class="mt-8 space-y-3 pb-10">
-          <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">⭐</div>
-              <span class="text-sm font-semibold text-[#0D0D0D]">My Favorites</span>
-            </div>
-            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </div>
-          <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">📍</div>
-              <span class="text-sm font-semibold text-[#0D0D0D]">Saved Addresses</span>
-            </div>
-            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </div>
-          <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">💳</div>
-              <span class="text-sm font-semibold text-[#0D0D0D]">Payment Methods</span>
-            </div>
-            <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </div>
-          <button class="w-full mt-4 py-4 text-red-500 font-bold text-sm bg-white rounded-2xl shadow-sm active:bg-red-50 transition-colors">Log Out</button>
-        </div>
-      </div>
-    </div>
+    <div id="view-orders" class="view hidden">...</div>
+    <div id="view-profile" class="view hidden">...</div>
 
     <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-white border-t border-[#F0F0F0] flex z-20 shadow-lg">
       <button data-nav="home" class="nav-btn active-nav flex-1 flex flex-col items-center py-3 gap-1">
