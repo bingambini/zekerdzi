@@ -107,19 +107,26 @@ function openProductDetail(id) {
     const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
     if (qtyEl) qtyEl.textContent = detailQty;
     
+    // სახელების განლაგება: ჯერ ქართული, მერე ინგლისური
     document.getElementById('detail-ka').textContent = item.ka;
     document.getElementById('detail-name').textContent = item.name;
     document.getElementById('detail-desc').textContent = item.desc;
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
 
-    // ბეიჯების მართვა (უფრო მარტივი სელექტორით, რომ შეცდომა გამოირიცხოს)
+    // ბეიჯების მართვა - მხოლოდ თუ მონაცემები არსებობს
     const badgeContainer = document.querySelector('#view-item-detail .flex.gap-2.mb-6');
     if (badgeContainer) {
-        badgeContainer.innerHTML = `
-            <div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⭐ 4.9</div>
-            <div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⏱️ ${item.time || '20-30'} MIN</div>
-            <div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⚖️ ${item.weight || '450'}${item.unit || 'G'}</div>
-        `;
+        let badgesHtml = '<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⭐ 4.9</div>';
+        
+        if (item.time && item.time !== "") {
+            badgesHtml += `<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⏱️ ${item.time} MIN</div>`;
+        }
+        
+        if (item.weight && item.weight !== "") {
+            badgesHtml += `<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⚖️ ${item.weight}${item.unit || 'G'}</div>`;
+        }
+        
+        badgeContainer.innerHTML = badgesHtml;
     }
 
     const optionsCont = document.getElementById('size-options-container');
