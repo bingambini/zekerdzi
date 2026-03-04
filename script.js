@@ -144,7 +144,7 @@ function changeDetailQty(amount) {
     if (item) updateDetailPrice(item.price);
 }
 
-// --- ახალი ფუნქცია დანამატების რაოდენობის შესაცვლელად ---
+// --- ფუნქცია დანამატების რაოდენობის შესაცვლელად ---
 function updateExtraQty(name, delta, price, basePrice) {
     const safeName = name.replace(/\s+/g, '');
     const currentQty = selectedExtras[name] || 0;
@@ -174,7 +174,6 @@ function updateExtraQty(name, delta, price, basePrice) {
 function updateDetailPrice(basePrice) {
     let extraToppingsPrice = 0;
     
-    // დანამატების ჯამური ფასი რაოდენობების მიხედვით
     for (const [name, qty] of Object.entries(selectedExtras)) {
         const item = getItem(window.currentDetailId);
         const extraData = item.extras.split(',').find(ex => ex.split(':')[0].trim() === name);
@@ -260,7 +259,7 @@ function openProductDetail(id) {
                 const price = parseFloat(exPrice);
                 const safeName = name.replace(/\s+/g, '');
                 
-                selectedExtras[name] = 0; // ინიციალიზაცია
+                selectedExtras[name] = 0; 
 
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm mb-2 border border-[#EEE]";
