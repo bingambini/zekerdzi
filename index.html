@@ -245,39 +245,42 @@
             </div>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 p-5 bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.05)] border-t border-[#EEE] z-50">
+<div class="fixed bottom-0 left-0 right-0 p-5 bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.05)] border-t border-[#EEE] z-50">
+    <div class="max-w-sm mx-auto">
+        <div class="flex justify-between items-start mb-4 h-fit">
             
-            <div class="max-w-sm mx-auto">
-                <div class="flex flex-col mb-4">
-                    <div class="flex justify-between items-center px-1 mb-2">
-                        <span class="text-[#888] text-[10px] font-bold uppercase tracking-widest">ჯამური ფასი:</span>
-                        <span id="final-total-price" class="text-xl font-black text-[#0D0D0D]">₾0.00</span>
+            <div id="price-display-container" class="flex flex-col min-w-[120px]">
+                <span class="text-[#888] text-[10px] font-bold uppercase tracking-widest mb-1">ჯამური ფასი:</span>
+                <div id="price-stack" class="flex flex-col">
+                    <span id="final-total-price" class="text-xl font-black text-[#0D0D0D]">₾195.50</span>
                     </div>
+            </div>
 
-                    <div class="px-1">
-                        <button onclick="togglePromoField()" id="promo-btn-toggle" class="text-[#1D6FE8] text-[11px] font-bold uppercase tracking-tighter flex items-center gap-1 transition-all">
-                            <span id="promo-plus-icon">⊕</span> პრომო კოდი
-                        </button>
-                        
-                        <div id="promo-collapsible" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
-                            <div class="flex gap-2 mt-3">
-                                <input type="text" id="promo-input" placeholder="შეიყვანეთ კოდი" 
-                                    class="flex-1 bg-[#F5F3EF] border border-transparent rounded-xl px-4 py-2.5 text-sm focus:border-[#1D6FE8] outline-none">
-                                <button onclick="applyPromoCode()" class="bg-[#1D6FE8] text-white px-5 py-2.5 rounded-xl text-xs font-bold active:scale-95">
-                                    OK
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <p id="promo-message" class="text-[10px] mb-3 text-center hidden"></p>
-
-                <button onclick="submitFinalOrder()" class="w-full bg-[#1D6FE8] text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-[#1D6FE8]/30 uppercase tracking-widest active:scale-[0.98] transition-all">
-                    შეკვეთის დადასტურება
+            <div class="w-1/2 flex flex-col items-end">
+                <button onclick="togglePromoField()" id="promo-btn-toggle" class="text-[#1D6FE8] text-[11px] font-bold uppercase tracking-tighter flex items-center gap-1 mb-2">
+                    <span id="promo-plus-icon">⊕</span> პრომო კოდი
                 </button>
+                
+                <div id="promo-collapsible" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out w-full">
+                    <div class="flex gap-1">
+                        <input type="text" id="promo-input" placeholder="კოდი" 
+                            class="w-full bg-[#F5F3EF] border-2 border-transparent rounded-l-xl px-3 py-2 text-xs font-bold outline-none transition-all">
+                        <button onclick="applyPromoCode()" class="bg-[#1D6FE8] text-white px-4 py-2 rounded-r-xl text-xs font-bold active:scale-95">
+                            OK
+                        </button>
+                    </div>
+                    <p id="promo-error-msg" class="text-[9px] text-red-500 mt-1 font-bold hidden text-right">კოდი არასწორია</p>
+                </div>
             </div>
         </div>
+
+        <button onclick="submitFinalOrder()" class="w-full bg-[#1D6FE8] text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-[#1D6FE8]/30 uppercase tracking-widest active:scale-[0.98] transition-all">
+            შეკვეთის დადასტურება
+        </button>
+    </div>
+</div>
+
+      
     </div>
     <div id="view-orders" class="view hidden">
       <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
