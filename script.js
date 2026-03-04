@@ -74,9 +74,11 @@ function processMenuData(allData) {
 function changeDetailQty(amount) {
     detailQty += amount;
     if (detailQty < 1) detailQty = 1;
-    document.getElementById('detail-qty-val').textContent = detailQty;
     
-    // განვაახლოთ ფასი ღილაკზე
+    // ვპოულობთ რაოდენობის ელემენტს (HTML-ში span-ია ბტნ-ებს შორის)
+    const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
+    if (qtyEl) qtyEl.textContent = detailQty;
+    
     const item = getItem(window.currentDetailId);
     if (item) updateDetailPrice(item.price);
 }
@@ -99,28 +101,27 @@ function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
 
-    window.currentDetailId = id; // შევინახოთ მიმდინარე ID
+    window.currentDetailId = id; 
     selectedOptions = { label: '', extra: 0 };
     detailQty = 1; 
-    document.getElementById('detail-qty-val').textContent = detailQty;
     
-    // სახელები: ქართული (დიდი) და ინგლისური (პატარა)
+    // ვანახლებთ რაოდენობას ვიზუალურად
+    const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
+    if (qtyEl) qtyEl.textContent = detailQty;
+    
     document.getElementById('detail-ka').textContent = item.ka;
     document.getElementById('detail-name').textContent = item.name;
-    
     document.getElementById('detail-desc').textContent = item.desc;
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
 
-    // ბეიჯების პირობითი გამოჩენა
-    const badgeCont = document.getElementById('detail-badges-container');
-    if (badgeCont) {
-        let badgesHtml = '<div class="d-badge">⭐ 4.9</div>';
-        if (item.time) badgesHtml += `<div class="d-badge">⏱ ${item.time} წთ</div>`;
-        if (item.weight) badgesHtml += `<div class="d-badge">⚖ ${item.weight} ${item.unit}</div>`;
-        badgeCont.innerHTML = badgesHtml;
+    // ბეიჯების მართვა
+    const badges = document.querySelectorAll('#view-item-detail .bg-white.px-3.py-1.5.rounded-full');
+    if(badges.length >= 3) {
+        badges[1].innerHTML = `⏱️ ${item.time || '20-30'} MIN`;
+        badges[2].innerHTML = `⚖️ ${item.weight || '450'}${item.unit || 'G'}`;
     }
 
-    // ზომების და ექსტრების სექცია
+    // ზომების სექცია
     const optionsCont = document.getElementById('size-options-container');
     const sizeSection = document.getElementById('size-selection');
     if (optionsCont) optionsCont.innerHTML = '';
@@ -135,12 +136,6 @@ function openProductDetail(id) {
             const btn = document.createElement('div');
             btn.className = `size-pill ${index === 0 ? 'active' : ''}`;
             btn.innerHTML = `
-                <div class="pizza-draft-icon">
-                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="50" r="45" stroke-width="4" stroke="currentColor"/>
-                        <path d="M50 5V95M5 50H95M18 18L82 82M82 18L18 82" stroke-width="3" stroke="currentColor" stroke-linecap="round"/>
-                    </svg>
-                </div>
                 <div class="size-info-block">
                     <span class="size-name">${cleanLabel}</span>
                     <span class="size-price">+₾${priceVal.toFixed(2)}</span>
@@ -149,7 +144,7 @@ function openProductDetail(id) {
             if(index === 0) selectedOptions = { label: cleanLabel, extra: priceVal };
 
             btn.onclick = function() {
-                document.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
+                optionsCont.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 selectedOptions = { label: cleanLabel, extra: priceVal };
                 updateDetailPrice(item.price);
@@ -160,6 +155,7 @@ function openProductDetail(id) {
         sizeSection.classList.add('hidden');
     }
 
+    // ექსტრების სექცია
     const extrasCont = document.getElementById('extras-options-container');
     const extrasSection = document.getElementById('extras-selection');
     if (extrasCont) extrasCont.innerHTML = '';
@@ -172,9 +168,9 @@ function openProductDetail(id) {
             const div = document.createElement('div');
             div.className = 'extra-item-row';
             div.innerHTML = `
-                <label style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #F0F0F0; width:100%; cursor:pointer;">
-                    <span style="font-size:14px; color:#2D2D2D;">${exLabel.trim()} (+₾${parseFloat(exPrice).toFixed(2)})</span>
-                    <input type="checkbox" data-price="${exPrice}" style="width:20px; height:20px;" onchange="updateDetailPrice(${item.price})">
+                <label class="flex justify-between items-center py-2 border-b border-[#EEE] cursor-pointer w-full">
+                    <span class="text-sm">${exLabel.trim()} (+₾${parseFloat(exPrice).toFixed(2)})</span>
+                    <input type="checkbox" data-price="${exPrice}" class="w-5 h-5" onchange="updateDetailPrice(${item.price})">
                 </label>`;
             extrasCont.appendChild(div);
         });
@@ -182,9 +178,15 @@ function openProductDetail(id) {
         extrasSection.classList.add('hidden');
     }
 
+    // რაოდენობის ღილაკების დაკავშირება
+    const qtyBtns = document.querySelectorAll('#view-item-detail .fixed button');
+    if(qtyBtns.length >= 2) {
+        qtyBtns[0].onclick = () => changeDetailQty(-1);
+        qtyBtns[1].onclick = () => changeDetailQty(1);
+    }
+
     updateDetailPrice(item.price);
 
-    // დამატების ღილაკი ეფექტით
     const addBtn = document.getElementById('detail-add-btn');
     addBtn.onclick = function () {
         const selectedExtras = [];
@@ -195,15 +197,13 @@ function openProductDetail(id) {
             });
         });
         
-        // დამატება მითითებული რაოდენობით
         for(let i=0; i < detailQty; i++) {
             addToCart(id, selectedOptions, selectedExtras);
         }
 
-        // ეფექტი და გადასვლა
         const originalContent = addBtn.innerHTML;
-        addBtn.style.background = '#28a745';
-        addBtn.innerHTML = '✓ დაემატა კალათაში';
+        addBtn.style.background = '#10B981';
+        addBtn.innerHTML = '<span>Added to Cart!</span>';
         
         setTimeout(() => {
             addBtn.style.background = '#1D6FE8';
@@ -214,8 +214,6 @@ function openProductDetail(id) {
 
     showView('item-detail');
 }
-
-// დანარჩენი ფუნქციები (getMediaHtml, renderHome, renderCart და ა.შ. რჩება უცვლელი)
 
 function buildCategoryFilters() {
     const container = document.querySelector('.cat-pills-container');
@@ -284,27 +282,17 @@ function renderHome(f) {
     if (!grid) return;
     
     grid.innerHTML = list.map(function (d) {
-        const timeBadge = d.time ? `<span style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:4px 10px; border-radius:10px; font-size:10px; backdrop-filter:blur(5px); font-weight:600;">⏱ ${d.time} წთ</span>` : '';
-        const weightBadge = d.weight ? `<span style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); color:white; padding:4px 10px; border-radius:10px; font-size:10px; backdrop-filter:blur(5px); font-weight:600;">⚖ ${d.weight}${d.unit}</span>` : '';
-
         return `
-        <div class="dish-card" onclick="openProductDetail(${d.id})" style="display: flex; flex-direction: column; overflow:hidden; border-radius: 1.5rem; background: #fff; height: 100%;">
-          <div style="position:relative; height:150px; overflow: hidden; border-radius: 1.5rem 1.5rem 0 0;">
-            ${getMediaHtml(d.emoji, 'dish-img')}
-            ${d.bs ? '<span class="bsb" style="top: 10px; left: 10px; font-size: 10px; padding: 4px 8px;">BEST SELLER</span>' : ''}
-            ${timeBadge}
-            ${weightBadge}
+        <div class="dish-card bg-white rounded-3xl overflow-hidden shadow-sm flex flex-col h-full" onclick="openProductDetail(${d.id})">
+          <div class="relative h-32 overflow-hidden">
+            ${getMediaHtml(d.emoji, 'w-full h-full object-cover')}
+            ${d.bs ? '<span class="absolute top-2 left-2 bg-[#C9A84C] text-[#0D0D0D] text-[8px] font-bold px-2 py-1 rounded-full uppercase">Best Seller</span>' : ''}
           </div>
-          <div class="dish-info" style="padding: 15px; display: flex; flex-direction: column; flex: 1; justify-content: flex-start;">
-            <p class="dish-name" style="margin: 0; font-weight: 700; font-size: 15px; color: #000; line-height: 1.2;">${d.ka}</p>
-            <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:18px; letter-spacing: -0.3px;">₾${d.price.toFixed(2)}</p>
-                <button class="add-btn" style="position:static; width: 28px; height: 28px; background: #1D6FE8; border-radius: 8px; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="event.stopPropagation();openProductDetail(${d.id})">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </button>
+          <div class="p-3 flex flex-col flex-1">
+            <h4 class="font-bold text-sm text-[#0D0D0D] line-clamp-1">${d.ka}</h4>
+            <div class="mt-auto pt-2 flex items-center justify-between">
+                <span class="text-[#1D6FE8] font-bold text-sm">₾${d.price.toFixed(2)}</span>
+                <button class="w-7 h-7 bg-[#1D6FE8] text-white rounded-lg flex items-center justify-center" onclick="event.stopPropagation();openProductDetail(${d.id})">+</button>
             </div>
           </div>
         </div>`;
@@ -326,19 +314,21 @@ function renderMenu(cat, element) {
 function renderMenuItems(items) {
     var el = document.getElementById('menu-list');
     if (!el) return;
-    if (!items.length) { el.innerHTML = '<p style="text-align:center;color:#AAA;padding:40px;font-size:14px">No dishes found</p>'; return; }
+    if (!items.length) { el.innerHTML = '<p class="text-center text-[#AAA] py-10">No dishes found</p>'; return; }
     el.innerHTML = items.map(function (i) {
-        return `<div class="menu-item" onclick="openProductDetail(${i.id})">
-          <div class="menu-img-cont" style="width:80px; height:80px; flex-shrink:0;">
-            ${getMediaHtml(i.emoji, 'menu-img')}
+        return `
+        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm" onclick="openProductDetail(${i.id})">
+          <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+            ${getMediaHtml(i.emoji, 'w-full h-full object-cover')}
           </div>
-          <div class="menu-info">
-            <p class="menu-name">${i.ka}</p>
-            <p class="menu-ka">${i.name}</p>
-            <p class="menu-desc">${i.desc}</p>
-            <span class="menu-price">₾${i.price.toFixed(2)}</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-[#0D0D0D] text-sm truncate">${i.ka}</h4>
+            <p class="text-[10px] text-[#888] line-clamp-1 mt-0.5">${i.desc || ''}</p>
+            <div class="flex items-center justify-between mt-2">
+                <span class="text-[#1D6FE8] font-bold text-sm">₾${i.price.toFixed(2)}</span>
+                <button class="w-6 h-6 bg-[#F5F3EF] text-[#0D0D0D] rounded-lg flex items-center justify-center font-bold" onclick="event.stopPropagation();openProductDetail(${i.id})">+</button>
+            </div>
           </div>
-          <button class="menu-add" onclick="event.stopPropagation();openProductDetail(${i.id})">+</button>
         </div>`;
     }).join('');
 }
@@ -351,7 +341,7 @@ function addToCart(id, options = { label: '', extra: 0 }, extras = []) {
     var it = getItem(id); if (!it) return;
     
     var extrasKey = extras.map(e => e.label).sort().join('|');
-    var cartId = id + '-' + options.label + '-' + extrasKey;
+    var cartId = id + '-' + (options.label || 'std') + '-' + extrasKey;
     
     var extrasPrice = extras.reduce((sum, e) => sum + e.price, 0);
     var finalPrice = it.price + options.extra + extrasPrice;
@@ -395,31 +385,43 @@ function renderCart() {
     if (!c) return;
     var items = Object.values(cart);
     if (!items.length) {
-        c.innerHTML = `<div class="ecart"><div style="font-size:48px">🛒</div><p>Your cart is empty</p>
-          <button onclick="showView('menu')" style="margin-top:16px;background:#1D6FE8;color:white;border:none;border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">Browse Menu</button></div>`;
+        c.innerHTML = `<div class="text-center py-20"><div class="text-5xl mb-4">🛒</div><p class="text-[#888]">Your cart is empty</p></div>`;
         setSummary(0); return;
     }
     c.innerHTML = items.map(function (i) {
-        return `<div class="cart-item">
-          <div class="cart-img" style="width:60px; height:60px;">${getMediaHtml(i.emoji, '')}</div>
-          <div class="cart-info">
-            <p class="cart-name">${i.name}</p>
-            <p class="cart-price">₾${i.price.toFixed(2)}</p>
-            <div class="qty-controls">
-              <button class="qty-btn" onclick="removeFromCart('${i.cartId}')">−</button>
-              <span class="qty-val">${i.qty}</span>
-              <button class="qty-btn plus" onclick="cart['${i.cartId}'].qty++; badge(); renderCart();">+</button>
-            </div></div></div>`;
+        return `
+        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm">
+          <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">${getMediaHtml(i.emoji, 'w-full h-full object-cover')}</div>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-sm text-[#0D0D0D] truncate">${i.name}</h4>
+            <p class="text-[#1D6FE8] font-bold text-sm mt-1">₾${i.price.toFixed(2)}</p>
+          </div>
+          <div class="flex items-center bg-[#F5F3EF] rounded-xl p-1">
+            <button class="w-7 h-7 flex items-center justify-center font-bold" onclick="removeFromCart('${i.cartId}')">−</button>
+            <span class="w-6 text-center text-xs font-bold">${i.qty}</span>
+            <button class="w-7 h-7 flex items-center justify-center font-bold" onclick="cart['${i.cartId}'].qty++; badge(); renderCart();">+</button>
+          </div>
+        </div>`;
     }).join('');
     setSummary(items.reduce(function (s, i) { return s + i.price * i.qty; }, 0));
 }
 
 function setSummary(sub) {
-    var tot = sub + (sub > 0 ? 3.50 : 0);
+    var delivery = sub > 0 ? 2.50 : 0;
+    var service = sub > 0 ? 1.00 : 0;
+    var tot = sub + delivery + service;
+    
     const subEl = document.getElementById('summary-subtotal');
     const totEl = document.getElementById('summary-total');
     const checkEl = document.getElementById('checkout-total');
+    
     if (subEl) subEl.textContent = '₾' + sub.toFixed(2);
     if (totEl) totEl.textContent = '₾' + tot.toFixed(2);
     if (checkEl) checkEl.textContent = '₾' + tot.toFixed(2);
+}
+
+function clearCart() {
+    cart = {};
+    badge();
+    renderCart();
 }
