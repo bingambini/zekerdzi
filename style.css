@@ -147,3 +147,7 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
 /* --- Empty States --- */
 .ecart { display: flex; flex-direction: column; align-items: center; padding: 60px 20px; color: #CCC; text-align: center }
 .ecart p { margin-top: 12px; font-size: 14px }
+
+/* --- Utility Classes --- */
+.cursor-not-allowed { cursor: not-allowed; }
+.opacity-50 { opacity: 0.5; }
