@@ -10,6 +10,7 @@ var selectedOptions = { label: '', extra: 0 };
 var selectedExtras = {}; // ახალი ობიექტი დანამატების რაოდენობისთვის
 var detailQty = 1; 
 let currentOrderMethod = 'delivery'; // მეთოდის გლობალური ცვლადი
+let currentDiscount = 0; // გლობალური ცვლადი ფასდაკლებისთვის
 
 async function fetchMenuData() {
     const cache = localStorage.getItem('menu_cache');
@@ -110,12 +111,42 @@ function handleMethodSelection(method) {
     updateFinalCheckoutPrice();
 }
 
+// --- პრომო კოდის ფუნქცია ---
+function applyPromoCode() {
+    const promoInput = document.getElementById('promo-code-input');
+    if (!promoInput) return;
+    
+    const code = promoInput.value.trim().toUpperCase();
+    
+    // აქ განსაზღვრავ მოქმედ კოდებს
+    if (code === 'PROMO10') {
+        currentDiscount = 0.10; // 10% ფასდაკლება
+        alert("პრომო კოდი 'PROMO10' გააქტიურდა! (-10%)");
+    } else if (code === 'WELCOME') {
+        currentDiscount = 5; // 5 ლარიანი ფასდაკლება
+        alert("პრომო კოდი 'WELCOME' გააქტიურდა! (-5₾)");
+    } else {
+        currentDiscount = 0;
+        alert("არასწორი პრომო კოდი");
+    }
+    
+    updateFinalCheckoutPrice();
+}
+
 function updateFinalCheckoutPrice() {
     let subtotal = Object.values(cart).reduce((s, i) => s + (i.price * i.qty), 0);
     let deliveryFee = (currentOrderMethod === 'delivery') ? 2.50 : 0;
     let serviceFee = subtotal > 0 ? 1.00 : 0;
     
-    let total = subtotal + deliveryFee + serviceFee;
+    // ფასდაკლების გამოკლება (თუ 1-ზე ნაკლებია = %, თუ მეტია = ფიქსირებული ლარი)
+    let discountAmount = 0;
+    if (currentDiscount > 0) {
+        discountAmount = (currentDiscount < 1) ? (subtotal * currentDiscount) : currentDiscount;
+    }
+    
+    let total = subtotal + deliveryFee + serviceFee - discountAmount;
+    if (total < 0) total = 0;
+
     const finalPriceEl = document.getElementById('final-total-price');
     if (finalPriceEl) finalPriceEl.textContent = '₾' + total.toFixed(2);
 }
