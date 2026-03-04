@@ -7,6 +7,7 @@ var dataLoaded = false;
 
 // ცვლადები დეტალური გვერდისთვის
 var selectedOptions = { label: '', extra: 0 };
+var selectedExtras = {}; // ახალი ობიექტი დანამატების რაოდენობისთვის
 var detailQty = 1; 
 
 async function fetchMenuData() {
@@ -82,18 +83,54 @@ function changeDetailQty(amount) {
     if (item) updateDetailPrice(item.price);
 }
 
+// --- ახალი ფუნქცია დანამატების რაოდენობის შესაცვლელად ---
+function updateExtraQty(name, delta, price, basePrice) {
+    const safeName = name.replace(/\s+/g, '');
+    const currentQty = selectedExtras[name] || 0;
+    const newQty = currentQty + delta;
+
+    if (newQty >= 0) {
+        selectedExtras[name] = newQty;
+        
+        const qtyLabel = document.getElementById(`qty-${safeName}`);
+        const minusBtn = document.querySelector(`.extra-minus-${safeName}`);
+        
+        if (qtyLabel) qtyLabel.innerText = newQty;
+
+        if (minusBtn) {
+            if (newQty > 0) {
+                minusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                minusBtn.classList.add('text-[#1D6FE8]');
+            } else {
+                minusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                minusBtn.classList.remove('text-[#1D6FE8]');
+            }
+        }
+        updateDetailPrice(basePrice);
+    }
+}
+
 function updateDetailPrice(basePrice) {
     let extraToppingsPrice = 0;
-    const checkboxes = document.querySelectorAll('#extras-options-container input[type="checkbox"]:checked');
-    checkboxes.forEach(cb => {
-        extraToppingsPrice += parseFloat(cb.getAttribute('data-price')) || 0;
-    });
+    
+    // დანამატების ჯამური ფასი რაოდენობების მიხედვით
+    for (const [name, qty] of Object.entries(selectedExtras)) {
+        const item = getItem(window.currentDetailId);
+        const extraData = item.extras.split(',').find(ex => ex.split(':')[0].trim() === name);
+        if (extraData) {
+            const price = parseFloat(extraData.split(':')[1]);
+            extraToppingsPrice += price * qty;
+        }
+    }
 
     const unitPrice = basePrice + selectedOptions.extra + extraToppingsPrice;
     const total = unitPrice * detailQty;
     
-    document.getElementById('detail-price').textContent = '₾' + unitPrice.toFixed(2);
-    document.getElementById('detail-btn-price').textContent = '₾' + total.toFixed(2);
+    const detailPriceEl = document.getElementById('detail-price');
+    const detailBtnPriceEl = document.getElementById('detail-btn-price');
+    
+    if (detailPriceEl) detailPriceEl.textContent = '₾' + unitPrice.toFixed(2);
+    if (detailBtnPriceEl) detailBtnPriceEl.textContent = '₾' + total.toFixed(2);
 }
 
 function openProductDetail(id) {
@@ -102,86 +139,91 @@ function openProductDetail(id) {
 
     window.currentDetailId = id; 
     selectedOptions = { label: '', extra: 0 };
+    selectedExtras = {}; // განულება
     detailQty = 1; 
     
     const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
     if (qtyEl) qtyEl.textContent = detailQty;
     
-    // სახელების განლაგება: ჯერ ქართული, მერე ინგლისური
     document.getElementById('detail-ka').textContent = item.ka;
     document.getElementById('detail-name').textContent = item.name;
     document.getElementById('detail-desc').textContent = item.desc;
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
 
-    // ბეიჯების მართვა - მხოლოდ თუ მონაცემები არსებობს
     const badgeContainer = document.querySelector('#view-item-detail .flex.gap-2.mb-6');
     if (badgeContainer) {
         let badgesHtml = '<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⭐ 4.9</div>';
-        
-        if (item.time && item.time !== "") {
-            badgesHtml += `<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⏱️ ${item.time} MIN</div>`;
-        }
-        
-        if (item.weight && item.weight !== "") {
-            badgesHtml += `<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⚖️ ${item.weight}${item.unit || 'G'}</div>`;
-        }
-        
+        if (item.time) badgesHtml += `<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⏱️ ${item.time} MIN</div>`;
+        if (item.weight) badgesHtml += `<div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⚖️ ${item.weight}${item.unit || 'G'}</div>`;
         badgeContainer.innerHTML = badgesHtml;
     }
 
     const optionsCont = document.getElementById('size-options-container');
     const sizeSection = document.getElementById('size-selection');
-    if (optionsCont) optionsCont.innerHTML = '';
-
-    if (item.options && item.options.includes(':') && sizeSection) {
-        sizeSection.classList.remove('hidden');
-        const optionsArray = item.options.split(',').map(opt => opt.trim());
-        optionsArray.forEach((opt, index) => {
-            const [label, priceAdd] = opt.split(':');
-            const cleanLabel = label.trim();
-            const priceVal = parseFloat(priceAdd);
-            const btn = document.createElement('div');
-            btn.className = `size-pill ${index === 0 ? 'active' : ''}`;
-            btn.innerHTML = `
-                <div class="size-info-block">
-                    <span class="size-name">${cleanLabel}</span>
-                    <span class="size-price">+₾${priceVal.toFixed(2)}</span>
-                </div>`;
-            
-            if(index === 0) selectedOptions = { label: cleanLabel, extra: priceVal };
-
-            btn.onclick = function() {
-                optionsCont.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedOptions = { label: cleanLabel, extra: priceVal };
-                updateDetailPrice(item.price);
-            };
-            optionsCont.appendChild(btn);
-        });
-    } else if (sizeSection) {
-        sizeSection.classList.add('hidden');
+    if (optionsCont) {
+        optionsCont.innerHTML = '';
+        if (item.options && item.options.includes(':')) {
+            sizeSection.classList.remove('hidden');
+            const optionsArray = item.options.split(',').map(opt => opt.trim());
+            optionsArray.forEach((opt, index) => {
+                const [label, priceAdd] = opt.split(':');
+                const cleanLabel = label.trim();
+                const priceVal = parseFloat(priceAdd);
+                const btn = document.createElement('div');
+                btn.className = `size-pill ${index === 0 ? 'active' : ''}`;
+                btn.innerHTML = `<div class="size-info-block"><span class="size-name">${cleanLabel}</span><span class="size-price">+₾${priceVal.toFixed(2)}</span></div>`;
+                if(index === 0) selectedOptions = { label: cleanLabel, extra: priceVal };
+                btn.onclick = function() {
+                    optionsCont.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedOptions = { label: cleanLabel, extra: priceVal };
+                    updateDetailPrice(item.price);
+                };
+                optionsCont.appendChild(btn);
+            });
+        } else if (sizeSection) {
+            sizeSection.classList.add('hidden');
+        }
     }
 
     const extrasCont = document.getElementById('extras-options-container');
     const extrasSection = document.getElementById('extras-selection');
-    if (extrasCont) extrasCont.innerHTML = '';
+    if (extrasCont) {
+        extrasCont.innerHTML = '';
+        if (item.extras && item.extras.trim() !== "") {
+            extrasSection.classList.remove('hidden');
+            const extrasArray = item.extras.split(',').map(ex => ex.trim());
+            extrasArray.forEach(ex => {
+                const [exLabel, exPrice] = ex.split(':');
+                const name = exLabel.trim();
+                const price = parseFloat(exPrice);
+                const safeName = name.replace(/\s+/g, '');
+                
+                selectedExtras[name] = 0; // ინიციალიზაცია
 
-    if (item.extras && item.extras.trim() !== "" && extrasSection) {
-        extrasSection.classList.remove('hidden');
-        const extrasArray = item.extras.split(',').map(ex => ex.trim());
-        extrasArray.forEach(ex => {
-            const [exLabel, exPrice] = ex.split(':');
-            const div = document.createElement('div');
-            div.className = 'extra-item-row';
-            div.innerHTML = `
-                <label class="flex justify-between items-center py-2 border-b border-[#EEE] cursor-pointer w-full">
-                    <span class="text-sm">${exLabel.trim()} (+₾${parseFloat(exPrice).toFixed(2)})</span>
-                    <input type="checkbox" data-price="${exPrice}" class="w-5 h-5" onchange="updateDetailPrice(${item.price})">
-                </label>`;
-            extrasCont.appendChild(div);
-        });
-    } else if (extrasSection) {
-        extrasSection.classList.add('hidden');
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm mb-2 border border-[#EEE]";
+                div.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-[#333]">${name}</span>
+                        <span class="text-[11px] text-[#1D6FE8] font-bold">+₾${price.toFixed(2)}</span>
+                    </div>
+                    <div class="flex items-center bg-[#F5F3EF] rounded-xl p-1 gap-2 border border-[#EEE]">
+                        <button onclick="updateExtraQty('${name}', -1, ${price}, ${item.price})" 
+                                class="extra-minus-${safeName} w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-[#888] font-bold active:scale-90 transition-all opacity-50 cursor-not-allowed">
+                            −
+                        </button>
+                        <span id="qty-${safeName}" class="w-5 text-center text-xs font-bold text-[#0D0D0D]">0</span>
+                        <button onclick="updateExtraQty('${name}', 1, ${price}, ${item.price})" 
+                                class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-[#1D6FE8] font-bold active:scale-90 transition-all">
+                            +
+                        </button>
+                    </div>`;
+                extrasCont.appendChild(div);
+            });
+        } else if (extrasSection) {
+            extrasSection.classList.add('hidden');
+        }
     }
 
     const qtyBtns = document.querySelectorAll('#view-item-detail .fixed button');
@@ -194,16 +236,18 @@ function openProductDetail(id) {
 
     const addBtn = document.getElementById('detail-add-btn');
     addBtn.onclick = function () {
-        const selectedExtras = [];
-        document.querySelectorAll('#extras-options-container input[type="checkbox"]:checked').forEach(cb => {
-            selectedExtras.push({
-                label: cb.closest('label').querySelector('span').textContent.split(' (+₾')[0],
-                price: parseFloat(cb.getAttribute('data-price'))
-            });
-        });
+        const extrasToPush = [];
+        for (const [name, qty] of Object.entries(selectedExtras)) {
+            if (qty > 0) {
+                const itemData = getItem(id);
+                const extraData = itemData.extras.split(',').find(ex => ex.split(':')[0].trim() === name);
+                const price = parseFloat(extraData.split(':')[1]);
+                extrasToPush.push({ label: name, price: price, qty: qty });
+            }
+        }
         
         for(let i=0; i < detailQty; i++) {
-            addToCart(id, selectedOptions, selectedExtras);
+            addToCart(id, selectedOptions, extrasToPush);
         }
 
         const originalContent = addBtn.innerHTML;
@@ -345,15 +389,18 @@ function getItem(id) {
 function addToCart(id, options = { label: '', extra: 0 }, extras = []) {
     var it = getItem(id); if (!it) return;
     
-    var extrasKey = extras.map(e => e.label).sort().join('|');
+    // ქართული სახელის ფორმირება დანამატების რაოდენობით
+    var extrasKey = extras.map(e => e.label + 'x' + e.qty).sort().join('|');
     var cartId = id + '-' + (options.label || 'std') + '-' + extrasKey;
     
-    var extrasPrice = extras.reduce((sum, e) => sum + e.price, 0);
+    var extrasPrice = extras.reduce((sum, e) => sum + (e.price * e.qty), 0);
     var finalPrice = it.price + options.extra + extrasPrice;
     
     var displayName = it.ka;
     if (options.label) displayName += ' (' + options.label + ')';
-    if (extras.length > 0) displayName += ' + ' + extras.map(e => e.label).join(', ');
+    if (extras.length > 0) {
+        displayName += ' + ' + extras.map(e => `${e.label}(${e.qty})`).join(', ');
+    }
 
     if (cart[cartId]) {
         cart[cartId].qty++;
