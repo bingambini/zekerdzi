@@ -262,26 +262,27 @@ function renderHome(f) {
         const weightBadge = d.weight ? `<span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:8px; font-size:10px; backdrop-filter:blur(4px); font-weight:500;">⚖ ${d.weight}${d.unit}</span>` : '';
 
         return `
-        <div class="dish-card" onclick="openProductDetail(${d.id})" style="display: flex; flex-direction: column; overflow:hidden;">
+        <div class="dish-card" onclick="openProductDetail(${d.id})" style="display: flex; flex-direction: column; overflow:hidden; border-radius: 1.5rem; background: #fff;">
           <div style="position:relative; height:150px; overflow: hidden; border-radius: 1.5rem 1.5rem 0 0;">
             ${getMediaHtml(d.emoji, 'dish-img')}
             ${d.bs ? '<span class="bsb" style="top: 10px; left: 10px; font-size: 10px; padding: 4px 8px;">BEST SELLER</span>' : ''}
             ${timeBadge}
             ${weightBadge}
           </div>
-          <div class="dish-info" style="padding: 12px 14px; display: flex; flex-direction: column; flex-grow: 1;">
-            <p class="dish-name" style="margin: 0 0 10px 0; font-weight: 700; font-size: 15px; color: #000; line-height: 1.2; min-height: 36px;">${d.ka}</p>
+          <div class="dish-info" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1;">
+            <p class="dish-name" style="margin: 0; font-weight: 700; font-size: 15px; color: #000; line-height: 1.2; min-height: 36px;">${d.ka}</p>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top: auto;">
+            <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center; width:100%;">
                 <p class="dish-price" style="margin:0; color:#1D6FE8; font-weight:800; font-size:18px; letter-spacing: -0.3px;">₾${d.price.toFixed(2)}</p>
-                <button class="add-btn" style="position:static; width: 36px; height: 36px; background: #1D6FE8; border-radius: 10px; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="event.stopPropagation();openProductDetail(${d.id})">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                
+                <button class="add-btn" style="position:static; width: 26px; height: 26px; background: #1D6FE8; border-radius: 8px; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="event.stopPropagation();openProductDetail(${d.id})">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                 </button>
             </div>
-          </div>
+            </div>
         </div>`;
     }).join('');
 }
