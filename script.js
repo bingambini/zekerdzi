@@ -112,10 +112,14 @@ function openProductDetail(id) {
     document.getElementById('detail-desc').textContent = item.desc;
     document.getElementById('detail-img').innerHTML = getMediaHtml(item.emoji, ''); 
 
-    const badges = document.querySelectorAll('#view-item-detail .bg-white.px-3.py-1.5.rounded-full');
-    if(badges.length >= 3) {
-        badges[1].innerHTML = `⏱️ ${item.time || '20-30'} MIN`;
-        badges[2].innerHTML = `⚖️ ${item.weight || '450'}${item.unit || 'G'}`;
+    // ბეიჯების მართვა (უფრო მარტივი სელექტორით, რომ შეცდომა გამოირიცხოს)
+    const badgeContainer = document.querySelector('#view-item-detail .flex.gap-2.mb-6');
+    if (badgeContainer) {
+        badgeContainer.innerHTML = `
+            <div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⭐ 4.9</div>
+            <div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⏱️ ${item.time || '20-30'} MIN</div>
+            <div class="bg-white px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-[#0D0D0D]">⚖️ ${item.weight || '450'}${item.unit || 'G'}</div>
+        `;
     }
 
     const optionsCont = document.getElementById('size-options-container');
