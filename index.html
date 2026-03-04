@@ -1,200 +1,199 @@
-<!DOCTYPE html>
+აი აქ ჩამისვიი ისე რომ კოდის სხვა ნაწილებს არშეეხო: <!DOCTYPE html>
 <html lang="ka">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZEKERDZI — Modern Tbilisi Kitchen</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZEKERDZI — Modern Tbilisi Kitchen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#F5F3EF] min-h-screen">
 
-  <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D0D0D]">
-    <div class="splash-logo mb-6">
-      <div class="w-28 h-28 rounded-2xl bg-[#1A1A1A] flex items-center justify-center border border-[#2A2A2A] shadow-2xl mb-6 mx-auto">
-        <span class="text-[#C9A84C] text-3xl font-display font-bold">Z</span>
-      </div>
-      <h1 class="text-white text-4xl font-display font-black tracking-widest text-center">ZEKERDZI</h1>
-      <p class="text-[#C9A84C] text-xs tracking-[.35em] text-center mt-1 uppercase">Modern Tbilisi Kitchen</p>
-    </div>
-    <div class="w-64 mt-12">
-      <p class="text-[#555] text-xs uppercase tracking-widest mb-3">Initialising</p>
-      <div class="h-1 bg-[#222] rounded-full overflow-hidden">
-        <div id="splash-bar" class="h-full bg-[#1D6FE8] rounded-full" style="width:0%;transition:width .05s linear"></div>
-      </div>
-      <p id="splash-pct" class="text-[#1D6FE8] text-xs text-right mt-1">0%</p>
-    </div>
-  </div>
+  <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D0D0D]">
+    <div class="splash-logo mb-6">
+      <div class="w-28 h-28 rounded-2xl bg-[#1A1A1A] flex items-center justify-center border border-[#2A2A2A] shadow-2xl mb-6 mx-auto">
+        <span class="text-[#C9A84C] text-3xl font-display font-bold">Z</span>
+      </div>
+      <h1 class="text-white text-4xl font-display font-black tracking-widest text-center">ZEKERDZI</h1>
+      <p class="text-[#C9A84C] text-xs tracking-[.35em] text-center mt-1 uppercase">Modern Tbilisi Kitchen</p>
+    </div>
+    <div class="w-64 mt-12">
+      <p class="text-[#555] text-xs uppercase tracking-widest mb-3">Initialising</p>
+      <div class="h-1 bg-[#222] rounded-full overflow-hidden">
+        <div id="splash-bar" class="h-full bg-[#1D6FE8] rounded-full" style="width:0%;transition:width .05s linear"></div>
+      </div>
+      <p id="splash-pct" class="text-[#1D6FE8] text-xs text-right mt-1">0%</p>
+    </div>
+  </div>
 
-  <div id="app" class="hidden max-w-sm mx-auto min-h-screen flex flex-col relative pb-20">
+  <div id="app" class="hidden max-w-sm mx-auto min-h-screen flex flex-col relative pb-20">
 
-    <div id="view-home" class="view active">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs text-[#888] uppercase tracking-widest">Zekerdzi · Tbilisi</p>
-            <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Popular Dishes</h2>
-          </div>
-          <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-          </button>
-        </div>
-        <div id="home-filter-container" class="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
-          <button data-filter="all" class="filter-pill active-pill">ALL</button>
-        </div>
-      </div>
-      <div class="mx-5 mt-2 rounded-2xl overflow-hidden relative h-44 bg-[#1a1a1a] shadow-lg">
-        <div class="absolute inset-0 bg-gradient-to-tr from-[#0D0D0D] via-transparent to-transparent z-10"></div>
-        <div class="hero-bg absolute inset-0 opacity-60"></div>
-        <div class="absolute bottom-4 left-4 z-20">
-          <span class="bg-[#C9A84C] text-[#0D0D0D] text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full">Chef's Selection</span>
-          <h3 class="text-white text-2xl font-display font-bold mt-1">Weekly Mix</h3>
-          <p class="text-white/70 text-xs">Experience the true taste of Georgia</p>
-        </div>
-      </div>
-      <div id="dishes-grid" class="grid grid-cols-2 gap-3 px-5 mt-5 pb-4"></div>
-    </div>
+    <div id="view-home" class="view active">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[#888] uppercase tracking-widest">Zekerdzi · Tbilisi</p>
+            <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Popular Dishes</h2>
+          </div>
+          <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          </button>
+        </div>
+        <div id="home-filter-container" class="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
+          <button data-filter="all" class="filter-pill active-pill">ALL</button>
+        </div>
+      </div>
+      <div class="mx-5 mt-2 rounded-2xl overflow-hidden relative h-44 bg-[#1a1a1a] shadow-lg">
+        <div class="absolute inset-0 bg-gradient-to-tr from-[#0D0D0D] via-transparent to-transparent z-10"></div>
+        <div class="hero-bg absolute inset-0 opacity-60"></div>
+        <div class="absolute bottom-4 left-4 z-20">
+          <span class="bg-[#C9A84C] text-[#0D0D0D] text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full">Chef's Selection</span>
+          <h3 class="text-white text-2xl font-display font-bold mt-1">Weekly Mix</h3>
+          <p class="text-white/70 text-xs">Experience the true taste of Georgia</p>
+        </div>
+      </div>
+      <div id="dishes-grid" class="grid grid-cols-2 gap-3 px-5 mt-5 pb-4"></div>
+    </div>
 
-    <div id="view-menu" class="view hidden">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Zekerdzi Menu</h2>
-          <button onclick="showView('cart')" class="w-10 h-10 flex items-center justify-center rounded-full bg-[#1D6FE8] shadow-md relative">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-            <span id="menu-cart-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-white text-[#1D6FE8] text-[10px] font-bold rounded-full flex items-center justify-center"></span>
-          </button>
-        </div>
-        <div class="mt-4 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm">
-          <svg class="w-4 h-4 text-[#AAA]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-          <input id="menu-search" type="text" placeholder="Search delicious Georgian food..." class="flex-1 text-sm bg-transparent outline-none text-[#333] placeholder-[#BBB]" />
-        </div>
-        <div class="cat-pills-container flex gap-2 mt-3 overflow-x-auto no-scrollbar"></div>
-      </div>
-      <div id="menu-list" class="px-5 pb-4 space-y-3"></div>
-    </div>
+    <div id="view-menu" class="view hidden">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Zekerdzi Menu</h2>
+          <button onclick="showView('cart')" class="w-10 h-10 flex items-center justify-center rounded-full bg-[#1D6FE8] shadow-md relative">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <span id="menu-cart-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-white text-[#1D6FE8] text-[10px] font-bold rounded-full flex items-center justify-center"></span>
+          </button>
+        </div>
+        <div class="mt-4 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm">
+          <svg class="w-4 h-4 text-[#AAA]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          <input id="menu-search" type="text" placeholder="Search delicious Georgian food..." class="flex-1 text-sm bg-transparent outline-none text-[#333] placeholder-[#BBB]" />
+        </div>
+        <div class="cat-pills-container flex gap-2 mt-3 overflow-x-auto no-scrollbar"></div>
+      </div>
+      <div id="menu-list" class="px-5 pb-4 space-y-3"></div>
+    </div>
 
-    <div id="view-item-detail" class="view hidden bg-white min-h-screen">
-      <div class="relative w-full h-80 overflow-hidden">
-        <div id="detail-img" class="w-full h-full flex items-center justify-center text-8xl bg-[#0D0D0D]">🍳</div>
-        <div class="absolute top-4 left-4 right-4 flex justify-between items-center mt-2">
-          <button onclick="goBack()" class="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-lg">
-            <svg class="w-5 h-5 text-[#0D0D0D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="relative -mt-6 bg-[#F5F3EF] rounded-t-3xl px-5 pt-8 pb-32">
-        <h1 id="detail-ka" class="text-3xl font-display font-bold text-[#0D0D0D]">სახელი</h1>
-        <p id="detail-desc" class="text-[#555] leading-relaxed text-sm mt-4">Description.</p>
-      </div>
-    </div>
+    <div id="view-item-detail" class="view hidden bg-white min-h-screen">
+      <div class="relative w-full h-80 overflow-hidden">
+        <div id="detail-img" class="w-full h-full flex items-center justify-center text-8xl bg-[#0D0D0D]">🍳</div>
+        <div class="absolute top-4 left-4 right-4 flex justify-between items-center mt-2">
+          <button onclick="goBack()" class="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-lg">
+            <svg class="w-5 h-5 text-[#0D0D0D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="flex gap-2">
+            <button class="w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full shadow-lg text-red-500 text-xl">♥</button>
+          </div>
+        </div>
+      </div>
+      <div class="relative -mt-6 bg-[#F5F3EF] rounded-t-3xl px-5 pt-8 pb-32">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <h1 id="detail-ka" class="text-3xl font-display font-bold text-[#0D0D0D]">სახელი</h1>
+            <p id="detail-name" class="text-[#888] mt-1 italic tracking-wide">English Name</p>
+          </div>
+          <div id="detail-price" class="text-2xl font-bold text-[#1D6FE8]">₾0.00</div>
+        </div>
+        
+        <div id="detail-badges-container" class="flex gap-3 mt-4 mb-6"></div>
 
-    <div id="view-cart" class="view hidden">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
-        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">Your Cart</h2>
-        <button onclick="clearCart()" class="text-[#1D6FE8] text-sm font-medium">Clear</button>
-      </div>
-      <div id="cart-items" class="px-5 mt-4 space-y-3"></div>
-    </div>
+        <div class="mb-8">
+          <h2 class="text-lg font-display font-bold mb-2 uppercase text-[12px] tracking-widest text-[#888]">აღწერა</h2>
+          <p id="detail-desc" class="text-[#555] leading-relaxed text-sm">Description text.</p>
+        </div>
 
-    <div id="view-orders" class="view hidden">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
-        <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Order History</h2>
-        <div class="flex gap-4 mt-4 border-b border-[#EEE]">
-          <button class="pb-2 border-b-2 border-[#1D6FE8] text-sm font-bold text-[#1D6FE8]">Active</button>
-          <button class="pb-2 text-sm font-medium text-[#888]">Past Orders</button>
-        </div>
-      </div>
-      <div class="px-5 mt-12 flex flex-col items-center justify-center opacity-60">
-        <div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-sm mb-6">
-          <svg class="w-10 h-10 text-[#DDD]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-[#0D0D0D]">No Active Orders</h3>
-        <p class="text-center text-sm text-[#888] mt-2 px-10">When you order something, you'll be able to track it right here.</p>
-        <button onclick="showView('menu')" class="mt-8 px-8 py-3 bg-white border border-[#EEE] rounded-2xl text-xs font-bold uppercase tracking-widest text-[#0D0D0D]">Start Ordering</button>
-      </div>
-    </div>
+        <div id="size-selection" class="mb-8 hidden">
+          <h2 class="text-lg font-display font-bold mb-4">აირჩიეთ ზომა</h2>
+          <div id="size-options-container" class="grid grid-cols-2 gap-3"></div>
+        </div>
 
-    <div id="view-profile" class="view hidden">
-      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3">
-        <h2 class="text-2xl font-display font-bold text-[#0D0D0D]">Account</h2>
-      </div>
-      <div class="px-5 mt-4">
-        <div class="bg-[#0D0D0D] rounded-3xl p-6 shadow-xl relative overflow-hidden mb-8">
-          <div class="absolute -right-10 -top-10 w-40 h-40 bg-[#1D6FE8] opacity-20 rounded-full blur-3xl"></div>
-          <div class="flex items-center gap-4 relative z-10">
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#1D6FE8] to-[#4A90E2] flex items-center justify-center text-white text-2xl font-bold shadow-lg">S</div>
-            <div>
-              <h3 class="text-white text-lg font-bold">Saba K.</h3>
-              <p class="text-white/50 text-xs tracking-wider uppercase">Premium Guest</p>
-            </div>
-          </div>
-        </div>
+        <div id="extras-selection" class="mb-8 hidden">
+          <h2 class="text-lg font-display font-bold mb-4">დამატებითი ინგრედიენტები</h2>
+          <div id="extras-options-container" class="space-y-3"></div>
+        </div>
 
-        <div class="space-y-4">
-          <h4 class="text-[10px] font-bold text-[#AAA] uppercase tracking-[.2em] ml-2">Preferences</h4>
-          <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#F0F0F0]">
-            <button class="w-full px-6 py-4 flex items-center justify-between border-b border-[#F9F9F9] active:bg-gray-50">
-              <div class="flex items-center gap-4">
-                <span class="text-lg text-[#1D6FE8]">📍</span>
-                <span class="text-sm font-medium text-[#333]">My Addresses</span>
-              </div>
-              <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <button class="w-full px-6 py-4 flex items-center justify-between active:bg-gray-50">
-              <div class="flex items-center gap-4">
-                <span class="text-lg text-[#1D6FE8]">💳</span>
-                <span class="text-sm font-medium text-[#333]">Payment Methods</span>
-              </div>
-              <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
+        <div class="mb-4">
+          <h2 class="text-lg font-display font-bold mb-3">შენიშვნა</h2>
+          <textarea class="w-full bg-white border border-[#EEE] rounded-2xl p-4 text-sm placeholder:text-[#BBB] resize-none min-h-[100px]" placeholder="მაგ: მწვანილი არ მინდა..."></textarea>
+        </div>
+      </div>
 
-          <h4 class="text-[10px] font-bold text-[#AAA] uppercase tracking-[.2em] ml-2 mt-6">Support</h4>
-          <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#F0F0F0]">
-            <button class="w-full px-6 py-4 flex items-center justify-between active:bg-gray-50">
-              <div class="flex items-center gap-4">
-                <span class="text-lg text-[#1D6FE8]">💬</span>
-                <span class="text-sm font-medium text-[#333]">Help Center</span>
-              </div>
-              <svg class="w-4 h-4 text-[#CCC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
+      <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-[#F0F0F0] px-5 py-4 z-50">
+        <div class="flex items-center gap-4 max-w-sm mx-auto">
+          <div class="flex items-center bg-[#F5F3EF] rounded-2xl p-1 h-14">
+            <button onclick="changeDetailQty(-1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">−</button>
+            <span id="detail-qty-val" class="w-8 text-center font-bold">1</span>
+            <button onclick="changeDetailQty(1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">+</button>
+          </div>
+          <button id="detail-add-btn" class="flex-1 bg-[#1D6FE8] text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#1D6FE8]/20 active:scale-[0.98] transition-all">
+            <span>Add to Order</span>
+            <span class="opacity-60">•</span>
+            <span id="detail-btn-price">₾0.00</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-          <button class="w-full mt-6 py-4 text-red-500 text-sm font-bold bg-red-50 rounded-2xl">Log Out</button>
-        </div>
-      </div>
-    </div>
+    <div id="view-cart" class="view hidden">
+      <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
+        <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="text-xl font-display font-bold text-[#0D0D0D]">Your Cart</h2>
+        <button onclick="clearCart()" class="text-[#1D6FE8] text-sm font-medium">Clear</button>
+      </div>
+      <div id="cart-items" class="px-5 mt-4 space-y-3"></div>
+      <div class="mx-5 mt-5 bg-white rounded-2xl px-5 py-4 shadow-sm">
+        <h3 class="font-display font-bold text-[#0D0D0D] mb-4">Summary</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between text-[#555]"><span>Subtotal</span><span id="summary-subtotal">₾0.00</span></div>
+          <div class="flex justify-between text-[#555]"><span>Delivery Fee</span><span>₾2.50</span></div>
+          <div class="flex justify-between text-[#555]"><span>Service Fee</span><span>₾1.00</span></div>
+          <div class="border-t border-dashed border-[#EEE] pt-3 mt-1 flex justify-between font-bold text-[#0D0D0D] text-base">
+            <span>Total</span><span id="summary-total" class="text-[#1D6FE8]">₾0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="px-5 mt-6 pb-4">
+        <button class="w-full bg-[#1D6FE8] text-white rounded-2xl py-4 flex items-center justify-between px-5 shadow-lg font-semibold">
+          <span>Go to Checkout</span>
+          <span id="checkout-total" class="bg-white/20 px-3 py-1 rounded-xl text-sm">₾0.00</span>
+        </button>
+      </div>
+    </div>
 
-    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-white border-t border-[#F0F0F0] flex z-20 shadow-lg">
-      <button onclick="showView('home')" data-nav="home" class="nav-btn active-nav flex-1 flex flex-col items-center py-3 gap-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        <span class="text-[10px] uppercase tracking-wider font-semibold">Home</span>
-      </button>
-      <button onclick="showView('menu')" data-nav="menu" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-        <span class="text-[10px] uppercase tracking-wider font-semibold">Menu</span>
-      </button>
-      <button onclick="showView('cart')" data-nav="cart" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
-        <div class="relative">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-          <span id="nav-cart-badge" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#1D6FE8] text-white text-[9px] font-bold rounded-full flex items-center justify-center"></span>
-        </div>
-        <span class="text-[10px] uppercase tracking-wider font-semibold">Cart</span>
-      </button>
-      <button onclick="showView('orders')" data-nav="orders" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        <span class="text-[10px] uppercase tracking-wider font-semibold">Orders</span>
-      </button>
-      <button onclick="showView('profile')" data-nav="profile" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-        <span class="text-[10px] uppercase tracking-wider font-semibold">Profile</span>
-      </button>
-    </nav>
-  </div>
+    <div id="view-orders" class="view hidden">...</div>
+    <div id="view-profile" class="view hidden">...</div>
 
-  <script src="script.js"></script>
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-white border-t border-[#F0F0F0] flex z-20 shadow-lg">
+      <button data-nav="home" class="nav-btn active-nav flex-1 flex flex-col items-center py-3 gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span class="text-[10px] uppercase tracking-wider font-semibold">Home</span>
+      </button>
+      <button data-nav="menu" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        <span class="text-[10px] uppercase tracking-wider font-semibold">Menu</span>
+      </button>
+      <button data-nav="cart" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
+        <div class="relative">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span id="nav-cart-badge" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#1D6FE8] text-white text-[9px] font-bold rounded-full flex items-center justify-center"></span>
+        </div>
+        <span class="text-[10px] uppercase tracking-wider font-semibold">Cart</span>
+      </button>
+      <button data-nav="orders" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <span class="text-[10px] uppercase tracking-wider font-semibold">Orders</span>
+      </button>
+      <button data-nav="profile" class="nav-btn flex-1 flex flex-col items-center py-3 gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <span class="text-[10px] uppercase tracking-wider font-semibold">Profile</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
