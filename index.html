@@ -92,55 +92,54 @@
           </div>
         </div>
       </div>
-      <div class="relative -mt-6 bg-[#F5F3EF] rounded-t-3xl px-5 pt-8 pb-32">
+      <div class="relative -mt-6 bg-[#F5F3EF] rounded-t-3xl px-5 pt-8 pb-16">
         <div class="flex justify-between items-start mb-2">
           <div>
-            <h1 id="detail-ka" class="text-3xl font-display font-bold text-[#0D0D0D]">სახელი</h1>
+            <h1 id="detail-ka" class="text-2xl font-display font-bold text-[#0D0D0D]">სახელი</h1>
             <p id="detail-name" class="text-[#888] mt-1 italic uppercase tracking-wider text-[10px]">Name</p>
           </div>
           <div id="detail-price" class="text-2xl font-bold text-[#1D6FE8]">₾0.00</div>
         </div>
-        <div class="flex gap-2 mt-4 mb-6 text-xs font-bold uppercase tracking-widest">
+        <div class="flex gap-2 mt-4 mb-6 text-[10px] font-bold uppercase tracking-widest">
             </div>
         <div class="mb-8">
-          <h2 class="text-lg font-display font-bold mb-2">Description</h2>
+          <h2 class="text-base font-display font-bold mb-2 text-[#0D0D0D]">Description</h2>
           <p id="detail-desc" class="text-[#555] leading-relaxed text-sm">Description text goes here.</p>
         </div>
         <div id="size-selection" class="mb-8 hidden">
           <div class="flex justify-between items-end mb-4">
-            <h2 class="text-lg font-display font-bold">აირჩიეთ ზომა</h2>
-            <span class="text-[10px] font-bold text-[#1D6FE8] uppercase tracking-widest">Pizza Size</span>
+            <h2 class="text-base font-display font-bold text-[#0D0D0D]">აირჩიეთ ზომა</h2>
+            <span class="text-[9px] font-bold text-[#1D6FE8] uppercase tracking-widest">Size</span>
           </div>
           <div id="size-options-container" class="grid grid-cols-2 gap-3"></div>
         </div>
         <div id="extras-selection" class="mb-8 hidden">
           <div class="flex justify-between items-end mb-4">
-            <h2 class="text-lg font-display font-bold">Extra Toppings</h2>
-            <span class="text-[10px] font-bold text-[#AAA] uppercase tracking-widest">Optional</span>
+            <h2 class="text-base font-display font-bold text-[#0D0D0D]">Extra Toppings</h2>
+            <span class="text-[9px] font-bold text-[#AAA] uppercase tracking-widest">Optional</span>
           </div>
           <div id="extras-options-container" class="space-y-3"></div>
         </div>
         <div class="mb-4">
-          <h2 class="text-lg font-display font-bold mb-3">Special Requests</h2>
-          <textarea class="w-full bg-white border border-[#EEE] rounded-2xl p-4 text-sm placeholder:text-[#BBB] resize-none min-h-[100px]" placeholder="Add a note..."></textarea>
+          <h2 class="text-base font-display font-bold mb-3 text-[#0D0D0D]">Special Requests</h2>
+          <textarea class="w-full bg-white border-none rounded-2xl p-4 text-sm placeholder:text-[#BBB] resize-none min-h-[100px] shadow-sm outline-none" placeholder="Add a note..."></textarea>
         </div>
       </div>
-      <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-[#F0F0F0] px-5 py-4 z-50">
+      <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-[#F0F0F0] px-5 py-4 z-50">
         <div class="flex items-center gap-4 max-w-sm mx-auto">
-          <div class="flex items-center bg-[#F5F3EF] rounded-2xl p-1 h-14">
-            <button onclick="changeDetailQty(-1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">−</button>
-            <span id="detail-qty" class="w-8 text-center font-bold">1</span>
-            <button onclick="changeDetailQty(1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">+</button>
+          <div class="flex items-center bg-[#F5F3EF] rounded-2xl p-1 h-14 border border-[#EEE]">
+            <button onclick="changeDetailQty(-1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:scale-90 transition-transform">−</button>
+            <span id="detail-qty" class="w-8 text-center font-bold text-base">1</span>
+            <button onclick="changeDetailQty(1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:scale-90 transition-transform">+</button>
           </div>
-          <button id="detail-add-btn" class="flex-1 bg-[#1D6FE8] text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#1D6FE8]/20 active:scale-[0.98] transition-transform">
-            <span>Add to Order</span>
-            <span class="opacity-60">•</span>
-            <span id="detail-btn-price">₾0.00</span>
+          <button id="detail-add-btn" class="flex-1 bg-[#1D6FE8] text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#1D6FE8]/20 active:scale-[0.98] transition-all">
+            <span class="text-sm">Add to Order</span>
+            <span class="opacity-40 text-xs">•</span>
+            <span id="detail-btn-price" class="text-sm">₾0.00</span>
           </button>
         </div>
       </div>
     </div>
-
     <div id="view-cart" class="view hidden">
       <div class="sticky top-0 z-10 bg-[#F5F3EF] px-5 pt-6 pb-3 flex items-center justify-between">
         <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm">
