@@ -95,16 +95,13 @@
       <div class="relative -mt-6 bg-[#F5F3EF] rounded-t-3xl px-5 pt-8 pb-32">
         <div class="flex justify-between items-start mb-2">
           <div>
-            <h1 id="detail-name" class="text-3xl font-display font-bold text-[#0D0D0D]">Dish Name</h1>
-            <p id="detail-ka" class="text-[#888] mt-1 italic">Georgian Subtitle</p>
+            <h1 id="detail-ka" class="text-3xl font-display font-bold text-[#0D0D0D]">სახელი</h1>
+            <p id="detail-name" class="text-[#888] mt-1 italic uppercase tracking-wider text-[10px]">Name</p>
           </div>
           <div id="detail-price" class="text-2xl font-bold text-[#1D6FE8]">₾0.00</div>
         </div>
-        <div class="flex gap-4 mt-4 mb-6 text-xs font-bold uppercase tracking-widest">
-          <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm text-amber-500">⭐ 4.9</div>
-          <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm text-[#555]">⏱️ 20-30 MIN</div>
-          <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm text-[#555]">⚖️ 450G</div>
-        </div>
+        <div class="flex gap-2 mt-4 mb-6 text-xs font-bold uppercase tracking-widest">
+            </div>
         <div class="mb-8">
           <h2 class="text-lg font-display font-bold mb-2">Description</h2>
           <p id="detail-desc" class="text-[#555] leading-relaxed text-sm">Description text goes here.</p>
@@ -131,9 +128,9 @@
       <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-[#F0F0F0] px-5 py-4 z-50">
         <div class="flex items-center gap-4 max-w-sm mx-auto">
           <div class="flex items-center bg-[#F5F3EF] rounded-2xl p-1 h-14">
-            <button class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">−</button>
-            <span class="w-8 text-center font-bold">1</span>
-            <button class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">+</button>
+            <button onclick="changeDetailQty(-1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">−</button>
+            <span id="detail-qty" class="w-8 text-center font-bold">1</span>
+            <button onclick="changeDetailQty(1)" class="w-10 h-10 flex items-center justify-center font-bold text-xl active:opacity-50">+</button>
           </div>
           <button id="detail-add-btn" class="flex-1 bg-[#1D6FE8] text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#1D6FE8]/20 active:scale-[0.98] transition-transform">
             <span>Add to Order</span>
