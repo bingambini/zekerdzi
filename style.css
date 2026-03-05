@@ -21,6 +21,26 @@ body { font-family: 'DM Sans', system-ui, sans-serif }
     to { opacity: 1; transform: translateY(0) } 
 }
 
+/* --- მობილური ოპტიმიზაცია (კლავიატურის და სქროლის მართვა) --- */
+.modal-content {
+    max-height: 90vh; /* ეკრანის 90%-ზე მეტი არასდროს დაიკავოს */
+    overflow-y: auto; /* თუ შიგთავსი ბევრია, გაჩნდეს სქროლი */
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 20px; /* ქვემოთ დავუტოვოთ სივრცე */
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+input {
+    font-size: 16px !important; /* iPhone-ის ავტომატური ზუმის პრევენცია */
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* --- Filters & Navigation Pills --- */
 .filter-pill { flex-shrink: 0; padding: 6px 16px; border-radius: 999px; border: 1.5px solid #E0E0E0; background: white; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: #555; cursor: pointer; transition: all .2s }
 .filter-pill:hover { border-color: #1D6FE8; color: #1D6FE8 }
