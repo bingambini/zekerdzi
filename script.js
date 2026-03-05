@@ -347,36 +347,60 @@ async function submitFinalOrder(event) {
             return;
         }
 
-        const city = document.getElementById('checkout-city')?.value || '';
-        const street = document.getElementById('checkout-street')?.value.trim() || '';
-        const apt = document.getElementById('apt')?.value.trim() || '';
-        const promo = document.getElementById('promo-input')?.value.trim() || '';
+        const name = encodeURIComponent(nameVal);
+        const phone = encodeURIComponent(phoneVal);
+        const city = encodeURIComponent(document.getElementById('checkout-city')?.value || '');
+        const street = encodeURIComponent(document.getElementById('checkout-street')?.value.trim() || '');
+        const apt = encodeURIComponent(document.getElementById('apt')?.value.trim() || '');
+        const floor = encodeURIComponent(document.getElementById('floor')?.value.trim() || '');
+        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || '');
+        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || '');
         
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
-        const total = parseFloat(totalText.replace('₾', '').trim());
+        const total = totalText.replace('₾', '').trim();
 
         // 3. პროდუქტების სიის მომზადება
-        const itemsList = Object.values(cart)
+        const itemsArray = Object.values(cart);
+        const itemsList = encodeURIComponent(itemsArray
             .map(item => `${item.name} (x${item.qty})`)
-            .join(', ');
+            .join(', '));
 
-        // 4. გადახდის ობიექტის მომზადება
-        const orderData = {
-            id: Math.floor(Math.random() * 100000),
-            total: total,
-            customerName: nameVal,
-            phone: phoneVal,
-            address: `${city}, ${street}, ბინა ${apt}`,
-            items: itemsList,
-            promo: promo
+        // 4. მონაცემების გაგზავნა ცხრილში (შენი ძველი ლოგიკა)
+        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=card`;
+        
+        await fetch(SCRIPT_URL + queryParams, {
+            method: 'GET',
+            mode: 'no-cors'
+        });
+
+        // 5. ლოკალური ისტორიისთვის შენახვა
+        const newOrder = {
+            id: Math.floor(Math.random() * 10000),
+            timestamp: new Date().toLocaleTimeString(),
+            items: itemsArray,
+            total: total + ' ₾',
+            address: currentOrderMethod === 'delivery' 
+                     ? `${decodeURIComponent(street)}, ბინა ${decodeURIComponent(apt)}` 
+                     : 'წაღება',
+            status: 'pending'
         };
+        
+        if (typeof myOrders !== 'undefined') {
+            myOrders.unshift(newOrder);
+            if (typeof renderOrders === "function") renderOrders();
+        }
 
-        // 5. გადახდის დაწყება
-        await startPayment(orderData);
+        // 6. ბანკის გადახდის დაწყება
+        await startPayment({
+            total: parseFloat(total),
+            id: newOrder.id,
+            customerName: nameVal
+        });
 
     } catch (error) {
-        console.error("Error starting payment:", error);
-        alert("დაფიქსირდა შეცდომა გადახდის დაწყებისას.");
+        console.error("Error submitting order:", error);
+        alert("დაფიქსირდა შეცდომა.");
+    } finally {
         if (btn) {
             btn.disabled = false;
             btn.textContent = originalText;
@@ -384,7 +408,7 @@ async function submitFinalOrder(event) {
     }
 }
 
-// ახალი ფუნქცია ბანკთან დასაკავშირებლად
+// ეს ფუნქცია აუცილებელია გადახდის გვერდის გამოსაძახებლად
 async function startPayment(orderData) {
     try {
         const response = await fetch(SCRIPT_URL, {
@@ -397,17 +421,12 @@ async function startPayment(orderData) {
                 publicKey: '10000151'
             })
         });
-        
         const result = await response.json();
-        
         if (result.redirect_url) {
             window.location.href = result.redirect_url;
-        } else {
-            throw new Error("გადახდის ლინკი ვერ მოიძებნა");
         }
-    } catch (error) {
-        console.error("Payment error:", error);
-        alert("ბანკთან დაკავშირება ვერ მოხერხდა.");
+    } catch (e) {
+        console.log("Payment redirect error", e);
     }
 }
 
