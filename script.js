@@ -375,9 +375,6 @@ const itemsList = Object.values(cart)
             userId: "Guest"
         };
 
-        // 6. გაგზავნა Google Script-ზე
-        // აქ ჩასვი შენი რეალური URL, რომელიც Deployment-ის დროს მიიღე
-        const SCRIPT_URL = 'აქ_ჩასვი_შენი_URL'; 
 
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
