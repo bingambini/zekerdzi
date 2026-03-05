@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMCw6W9OhLAxewue_fQWxfR5zuwJ_SIOHNudkDpuImGakpWoH9KXGHzblvCOevDKYc/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcudT0dNvbfyroM-lrfP49vGH8fgxFt7rPmCdIgOycNY902zG_sm0IEkcxQ2Q4oLh3/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -331,16 +331,16 @@ async function submitFinalOrder(event) {
     btn.textContent = "იგზავნება...";
 
     try {
-        const name = document.getElementById('checkout-name').value.trim();
-        const phone = document.getElementById('checkout-phone').value.trim();
-        const city = document.getElementById('checkout-city').value;
-        const street = document.getElementById('checkout-street').value.trim();
+        // მნიშვნელობების წამოღება და ენკოდირება (უსაფრთხო გაგზავნისთვის)
+        const name = encodeURIComponent(document.getElementById('checkout-name').value.trim());
+        const phone = encodeURIComponent(document.getElementById('checkout-phone').value.trim());
+        const city = encodeURIComponent(document.getElementById('checkout-city').value);
+        const street = encodeURIComponent(document.getElementById('checkout-street').value.trim());
         
-        // ID-ები აღებულია შენი HTML-დან (apt, floor, entrance)
-        const apt = document.getElementById('apt')?.value.trim() || '';
-        const floor = document.getElementById('floor')?.value.trim() || '';
-        const ent = document.getElementById('entrance')?.value.trim() || '';
-        const promo = document.getElementById('promo-input')?.value.trim() || '';
+        const apt = encodeURIComponent(document.getElementById('apt')?.value.trim() || '');
+        const floor = encodeURIComponent(document.getElementById('floor')?.value.trim() || '');
+        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || '');
+        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || '');
         
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
         const total = totalText.replace('₾', '').trim();
@@ -352,50 +352,35 @@ async function submitFinalOrder(event) {
             return;
         }
 
-        const itemsList = Object.values(cart)
+        const itemsList = encodeURIComponent(Object.values(cart)
             .map(item => `${item.name} (x${item.qty})`)
-            .join(', ');
+            .join(', '));
 
-        // მონაცემები, რომელიც Google Script-ის doPost-ს სჭირდება
-        const orderData = {
-            customerName: name,
-            phone: phone,
-            city: city,
-            street: street,
-            house: apt,       // აქ იგზავნება როგორც 'house'
-            floor: floor,     // აქ იგზავნება როგორც 'floor'
-            entrance: ent,     // აქ იგზავნება როგორც 'entrance'
-            items: itemsList,
-            total: total,
-            promo: promo,
-            method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash',
-            userId: "Web_User"
-        };
-
-        // შენი გამოგზავნილი SCRIPT_URL
+        // შენი SCRIPT URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMCw6W9OhLAxewue_fQWxfR5zuwJ_SIOHNudkDpuImGakpWoH9KXGHzblvCOevDKYc/exec";
 
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors', // Google Apps Script-ისთვის აუცილებელია no-cors
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
+        // ვაწყობთ URL პარამეტრებს (GET მოთხოვნისთვის)
+        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&entrance=${ent}&items=${itemsList}&total=${total}&promo=${promo}&method=cash`;
+
+        // გაგზავნა GET მეთოდით
+        await fetch(SCRIPT_URL + queryParams, {
+            method: 'GET',
+            mode: 'no-cors'
         });
 
-        // რადგან no-cors ვიყენებთ, response.ok ყოველთვის false იქნება, 
-        // ამიტომ პირდაპირ ვაგრძელებთ წარმატების ლოგიკას
+        // ლოკალური ისტორიისთვის ობიექტის შექმნა
         const newOrder = {
             id: Math.floor(Math.random() * 10000),
             timestamp: new Date().toLocaleTimeString(),
             items: Object.values(cart),
             total: total + ' ₾',
-            address: currentOrderMethod === 'delivery' ? `${street}, ბინა ${apt}` : 'წაღება',
+            address: currentOrderMethod === 'delivery' ? `${decodeURIComponent(street)}, ბინა ${decodeURIComponent(apt)}` : 'წაღება',
             status: 'pending'
         };
         
         if (typeof myOrders !== 'undefined') {
             myOrders.unshift(newOrder);
-            renderOrders();
+            if (typeof renderOrders === "function") renderOrders();
         }
 
         alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
