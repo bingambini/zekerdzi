@@ -323,73 +323,82 @@ function updateFinalCheckoutPrice() {
 }
 
 async function submitFinalOrder(event) {
+    // 1. გააჩერე ფორმის სტანდარტული გაგზავნა
     if (event) event.preventDefault();
+    
+    console.log("შეკვეთის გაგზავნა დაიწყო...");
 
-    const submitBtn = document.querySelector('.submit-order-btn');
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'იგზავნება...';
-    }
-
-    // 1. მონაცემების შეგროვება ზუსტად იმ ID-ებით, რაც HTML-ში გვაქვს
-    const orderData = {
-        customerName: document.getElementById('checkout-name')?.value || '',
-        phone: document.getElementById('checkout-phone')?.value || '',
-        city: document.getElementById('checkout-city')?.value || '',
-        street: document.getElementById('checkout-street')?.value || '',
-        apt: document.getElementById('checkout-apt')?.value || '',
-        floor: document.getElementById('checkout-floor')?.value || '',
-        ent: document.getElementById('checkout-ent')?.value || '',
-        promo: document.getElementById('promo-input')?.value || 'None',
-        method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash',
-        total: document.getElementById('final-total-price')?.textContent.replace('₾', '').trim() || '0',
-        items: cart.map(item => `${item.name} (${item.quantity}x)`).join(', '), // კალათის პროდუქტების სია ტექსტად
-        userId: "Guest" // აქ შეგიძლია მომავალში ავტორიზებული მომხმარებლის ID ჩასვა
-    };
-
-    // 2. ვალიდაცია (რომ ცარიელი არ გაიგზავნოს აუცილებელი ველები)
-    if (!orderData.phone || !orderData.customerName || !orderData.street) {
-        alert('გთხოვთ შეავსოთ აუცილებელი ველები: სახელი, ტელეფონი და ქუჩა');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'შეკვეთის გაფორმება';
-        }
-        return;
-    }
-
-    // 3. გაგზავნა შენს Google Script-ზე
-    const SCRIPT_URL = 'აქ_ჩასვი_შენი_GOOGLE_SCRIPT_URL';
+    // 2. ღილაკის ვიზუალური ბლოკირება (რომ ბევრჯერ არ დააჭირონ)
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "იგზავნება...";
 
     try {
+        // 3. მონაცემების ამოღება ზუსტად შენი HTML-ის ID-ებიდან
+        const name = document.getElementById('checkout-name').value.trim();
+        const phone = document.getElementById('checkout-phone').value.trim();
+        const city = document.getElementById('checkout-city').value;
+        const street = document.getElementById('checkout-street').value.trim();
+        const apt = document.getElementById('checkout-apt').value.trim();
+        const floor = document.getElementById('checkout-floor').value.trim();
+        const ent = document.getElementById('checkout-ent').value.trim();
+        const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value || 'cash';
+        const promo = document.getElementById('promo-input')?.value || 'None';
+        const total = document.getElementById('final-total-price')?.textContent.replace('₾', '').trim() || '0';
+
+        // 4. ვალიდაცია
+        if (!name || !phone || !street) {
+            alert("გთხოვთ შეავსოთ სახელი, ტელეფონი და ქუჩა!");
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+
+        // 5. კალათის პროდუქტების ფორმატირება (რომ ექსელში კარგად გამოჩნდეს)
+        const itemsList = cart.map(item => `${item.name} (x${item.quantity})`).join(', ');
+
+        const orderData = {
+            customerName: name,
+            phone: phone,
+            city: city,
+            street: street,
+            apt: apt,
+            floor: floor,
+            ent: ent,
+            items: itemsList,
+            total: total,
+            promo: promo,
+            method: paymentMethod,
+            userId: "Guest"
+        };
+
+        // 6. გაგზავნა Google Script-ზე
+        // აქ ჩასვი შენი რეალური URL, რომელიც Deployment-ის დროს მიიღე
+        const SCRIPT_URL = 'აქ_ჩასვი_შენი_URL'; 
+
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
+            mode: 'no-cors', // მნიშვნელოვანია CORS-ის გამო
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(orderData)
         });
 
-        const result = await response.json();
+        // 7. დასრულება
+        alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
+        
+        // კალათის გასუფთავება და მთავარზე დაბრუნება
+        if (typeof clearCart === "function") clearCart();
+        showView('home');
 
-        if (result.result === 'success') {
-            alert('შეკვეთა მიღებულია! ID: ' + result.orderId);
-            
-            // თუ გადახდის მეთოდი ბარათია და გვაქვს ლინკი, გადავიყვანოთ ბანკის გვერდზე
-            if (orderData.method === 'card' && result.payment_url) {
-                window.location.href = result.payment_url;
-            } else {
-                // თუ ნაღდი ფულია, უბრალოდ ვასუფთავებთ კალათას
-                clearCart();
-                showView('home');
-            }
-        } else {
-            throw new Error(result.error);
-        }
     } catch (error) {
-        console.error('Error:', error);
-        alert('დაფიქსირდა შეცდომა. შეკვეთა მაინც გაიგზავნა Sheets-ში, გთხოვთ დაგვიკავშირდეთ.');
+        console.error("Error submitting order:", error);
+        alert("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით.");
     } finally {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'შეკვეთის გაფორმება';
-        }
+        btn.disabled = false;
+        btn.textContent = originalText;
     }
 }
 
