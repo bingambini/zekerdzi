@@ -1,3 +1,10 @@
+// Telegram WebApp-ის ინიციალიზაცია და ეკრანზე გაშლა (მობილური ოპტიმიზაციისთვის)
+const tg = window.Telegram.WebApp;
+if (tg) {
+    tg.expand();
+    tg.ready();
+}
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-RVHYUxokmKU_xGsfOwk3TWkQwgA0pW2sYeH3_aOz5jjQJyany1b8FZm-3WcKLf-4/exec';
 
 var dishes = []; 
@@ -218,7 +225,7 @@ async function submitFinalOrder() {
 
     try {
         // !!! აქ ჩასვი შენი Google Apps Script-ის "Exec" ლინკი !!!
-        const SCRIPT_URL = "შენი_ახალი_DEPLOY_URL_აქ"; 
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-RVHYUxokmKU_xGsfOwk3TWkQwgA0pW2sYeH3_aOz5jjQJyany1b8FZm-3WcKLf-4/exec'; 
 
         // 4. მოთხოვნა ბანკის გადახდის ლინკზე (GET მოთხოვნა action=payment-ით)
         const response = await fetch(`${SCRIPT_URL}?action=payment&amount=${totalAmount}`);
@@ -236,7 +243,7 @@ async function submitFinalOrder() {
             confirmBtn.textContent = originalText;
         }
     } catch (error) {
-        console.error("Payment Fetch Error:", error);
+        console.error("Payment Error:", error);
         alert("ბანკთან კავშირი ვერ დამყარდა. შეამოწმეთ ინტერნეტი ან სკრიპტის ლინკი.");
         confirmBtn.disabled = false;
         confirmBtn.textContent = originalText;
