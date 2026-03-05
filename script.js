@@ -323,64 +323,82 @@ function updateFinalCheckoutPrice() {
 }
 
 async function submitFinalOrder(event) {
-    if (event) event.preventDefault();
+    // 1. მოვლენის შეჩერება და ღილაკის დაბლოკვა
+    if (event && event.preventDefault) event.preventDefault();
     
-    const btn = event.target;
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "იგზავნება...";
+    // ვპოულობთ ღილაკს უსაფრთხოდ
+    const btn = document.querySelector('button[onclick*="submitFinalOrder"]') || (event ? event.target : null);
+    const originalText = btn ? btn.textContent : "შეკვეთა";
+    
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "იგზავნება...";
+    }
 
     try {
-        // მონაცემების ამოღება
-        const name = encodeURIComponent(document.getElementById('checkout-name')?.value.trim() || '');
-        const phone = encodeURIComponent(document.getElementById('checkout-phone')?.value.trim() || '');
+        // 2. მონაცემების ამოღება ID-ების მიხედვით
+        const nameVal = document.getElementById('checkout-name')?.value.trim() || '';
+        const phoneVal = document.getElementById('checkout-phone')?.value.trim() || '';
+        
+        // ვალიდაცია: თუ სახელი ან ტელეფონი ცარიელია
+        if (!nameVal || !phoneVal) {
+            alert("გთხოვთ შეავსოთ სახელი და ტელეფონი!");
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+            return;
+        }
+
+        // 3. მონაცემების მომზადება (Encoding)
+        const name = encodeURIComponent(nameVal);
+        const phone = encodeURIComponent(phoneVal);
         const city = encodeURIComponent(document.getElementById('checkout-city')?.value || '');
         const street = encodeURIComponent(document.getElementById('checkout-street')?.value.trim() || '');
         const apt = encodeURIComponent(document.getElementById('apt')?.value.trim() || '');
         const floor = encodeURIComponent(document.getElementById('floor')?.value.trim() || '');
-        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || ''); // სადარბაზო
-        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || ''); // პრომო
+        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || '');
+        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || '');
         
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
-        const total = totalText.replace('₾', '').trim();
+        const total = encodeURIComponent(totalText.replace('₾', '').trim());
 
-        // ვაწყობთ პროდუქტების სიას (K სვეტისთვის)
-        const itemsList = encodeURIComponent(Object.values(cart)
-            .map(item => `${item.name} (x${item.qty})`)
-            .join(', '));
-
-        if (!name || !phone) {
-            alert("გთხოვთ შეავსოთ სახელი და ტელეფონი!");
-            btn.disabled = false;
-            btn.textContent = originalText;
-            return;
+        // 4. პროდუქტების სიის მომზადება (Items)
+        let itemsRaw = "კალათა ცარიელია";
+        if (typeof cart !== 'undefined' && Object.keys(cart).length > 0) {
+            itemsRaw = Object.values(cart)
+                .map(item => `${item.name} (x${item.qty})`)
+                .join(', ');
         }
+        const itemsList = encodeURIComponent(itemsRaw);
 
-        // შენი ბოლო SCRIPT URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec";
+        // 5. URL-ის აწყობა (გამოვიყენოთ არსებული SCRIPT_URL)
+        // თუ SCRIPT_URL ზემოთ არ გაქვს გამოცხადებული, აქ ჩაწერე პირდაპირ ლინკი ბრჭყალებში
+        const finalUrl = `https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
 
-        // !!! ყურადღება: აქ სახელები (ent, items, promoCode) ზუსტად უნდა ემთხვეოდეს Apps Script-ს !!!
-        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
+        console.log("მონაცემები იგზავნება...");
 
-        console.log("იგზავნება მონაცემები:", SCRIPT_URL + queryParams);
-
-        // გაგზავნა
-        await fetch(SCRIPT_URL + queryParams, {
+        // 6. გაგზავნა
+        await fetch(finalUrl, {
             method: 'GET',
             mode: 'no-cors'
         });
 
+        // 7. წარმატების დასასრული
         alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
         
         if (typeof clearCart === "function") clearCart();
-        showView('home');
+        if (typeof showView === "function") showView('home');
 
     } catch (error) {
         console.error("Error submitting order:", error);
-        alert("დაფიქსირდა შეცდომა გაგზავნისას.");
+        alert("დაფიქსირდა შეცდომა გაგზავნისას. გთხოვთ სცადოთ მოგვიანებით.");
     } finally {
-        btn.disabled = false;
-        btn.textContent = originalText;
+        // ღილაკის დაბრუნება საწყის მდგომარეობაში
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     }
 }
 
