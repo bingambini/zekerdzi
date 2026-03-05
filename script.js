@@ -1,4 +1,4 @@
-// Telegram WebApp-ის ინიციალიზაცია და ეკრანზე გაშლა
+// Telegram WebApp-ის ინიციალიზაცია და ეკრანზე გაშლა (მობილური ოპტიმიზაციისთვის)
 const tg = window.Telegram.WebApp;
 if (tg) {
     tg.expand();
@@ -14,138 +14,10 @@ var dataLoaded = false;
 
 // ცვლადები დეტალური გვერდისთვის
 var selectedOptions = { label: '', extra: 0 };
-var selectedExtras = {}; 
+var selectedExtras = {}; // ახალი ობიექტი დანამატების რაოდენობისთვის
 var detailQty = 1; 
-let currentOrderMethod = 'delivery'; 
-let currentDiscount = 0; 
-
-// --- შეკვეთების მართვის ახალი ლოგიკა ---
-let myOrders = []; 
-
-function renderOrders() {
-    const container = document.querySelector('#view-orders .mx-5.mt-5');
-    if (!container) return;
-
-    if (myOrders.length === 0) {
-        container.innerHTML = '<div class="text-center py-10 text-[#AAA]">შეკვეთები არ არის</div>';
-        return;
-    }
-
-    let currentHTML = '<p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3 font-bold">მიმდინარე</p>';
-    let pastHTML = '<p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3 mt-6 font-bold">წარსული</p>';
-    
-    let hasCurrent = false;
-    let hasPast = false;
-
-    myOrders.forEach(order => {
-        const isDelivered = order.status === 'delivered';
-        const card = `
-            <div class="bg-white rounded-[24px] p-5 shadow-sm border border-[#F0F0F0] mb-4 transition-all duration-500">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="relative flex h-2 w-2">
-                        ${isDelivered ? '' : '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1D6FE8] opacity-75"></span>'}
-                        <span class="relative inline-flex rounded-full h-2 w-2 ${isDelivered ? 'bg-gray-400' : 'bg-[#1D6FE8]'}"></span>
-                    </span>
-                    <span class="text-[11px] font-bold ${isDelivered ? 'text-gray-500' : 'text-[#1D6FE8]'} uppercase tracking-tighter">
-                        თქვენი შეკვეთის სტატუსი: ${isDelivered ? 'ჩაბარებულია' : 'მზადდება'}
-                    </span>
-                </div>
-
-                <div class="flex justify-between items-center mb-5">
-                    <h4 class="text-lg font-black text-[#0D0D0D]">Order #${order.id}</h4>
-                    <span class="text-lg font-black text-[#1D6FE8]">${order.total}</span>
-                </div>
-
-                <div class="flex justify-start">
-                    <button onclick="showReceipt(${order.id})" 
-                            class="bg-[#0D0D0D] text-white px-8 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] active:scale-95 transition-all shadow-lg shadow-black/10">
-                        დეტალურად
-                    </button>
-                </div>
-            </div>
-        `;
-
-        if (isDelivered) {
-            pastHTML += card;
-            hasPast = true;
-        } else {
-            currentHTML += card;
-            hasCurrent = true;
-        }
-    });
-
-    container.innerHTML = (hasCurrent ? currentHTML : '') + (hasPast ? pastHTML : '');
-}
-
-function showReceipt(orderId) {
-    const order = myOrders.find(o => o.id === orderId);
-    if (!order) return;
-
-    const overlay = document.createElement('div');
-    overlay.id = 'receipt-modal';
-    overlay.className = 'fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-6 backdrop-blur-sm transition-opacity duration-300';
-    
-    const itemsHtml = order.items.map(item => `
-        <div class="flex justify-between mb-1">
-            <span class="flex-1">${item.qty} x ${item.name}</span>
-            <span class="ml-2">₾${(item.price * item.qty).toFixed(2)}</span>
-        </div>
-    `).join('');
-
-    overlay.innerHTML = `
-        <div class="bg-white w-full max-w-[340px] p-8 shadow-2xl relative transition-transform duration-300 transform scale-100" 
-             style="font-family: 'Courier New', Courier, monospace; border-radius: 2px; color: #1a1a1a;">
-            
-            <div class="text-center border-b-2 border-dashed border-gray-300 pb-4 mb-4">
-                <h2 class="font-black text-xl italic uppercase tracking-tighter">RECEIPT / ჩეკი</h2>
-                <p class="text-[10px] mt-2">ID: #${order.id}</p>
-                <p class="text-[10px] uppercase">${order.timestamp} | ${new Date().toLocaleDateString()}</p>
-            </div>
-
-            <div class="text-[11px] mb-4 space-y-1">
-                <p class="font-bold uppercase underline">მიწოდების მისამართი:</p>
-                <p class="leading-tight">${order.address || 'მისამართი არ არის'}</p>
-            </div>
-
-            <div class="border-b border-dashed border-gray-300 mb-4"></div>
-
-            <div class="text-[12px] mb-4">
-                ${itemsHtml}
-            </div>
-
-            <div class="border-b-2 border-dashed border-gray-300 mb-4"></div>
-
-            <div class="flex justify-between font-black text-lg mb-6 uppercase">
-                <span>TOTAL / ჯამი:</span>
-                <span>${order.total}</span>
-            </div>
-
-            <div class="text-center text-[10px] mb-8 italic">
-                <p>გმადლობთ შეკვეთისთვის!</p>
-                <p class="mt-1 font-bold uppercase tracking-widest">Enjoy your meal!</p>
-            </div>
-
-            <button onclick="document.getElementById('receipt-modal').remove()" 
-                    class="w-full bg-[#0D0D0D] text-white py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors">
-                დახურვა
-            </button>
-
-            <div class="absolute -bottom-2 left-0 right-0 h-2 flex overflow-hidden">
-                ${Array(12).fill('<div class="min-w-[30px] h-4 bg-white rotate-45 -mt-2 shadow-sm border border-gray-100"></div>').join('')}
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-}
-
-function updateOrderStatus(orderId, newStatus) {
-    const order = myOrders.find(o => o.id === orderId);
-    if (order) {
-        order.status = newStatus;
-        renderOrders();
-    }
-}
+let currentOrderMethod = 'delivery'; // მეთოდის გლობალური ცვლადი
+let currentDiscount = 0; // გლობალური ცვლადი ფასდაკლებისთვის
 
 async function fetchMenuData() {
     const cache = localStorage.getItem('menu_cache');
@@ -199,23 +71,16 @@ function processMenuData(allData) {
     dishes = formattedData.filter(item => item.bs === true);
     menu = formattedData;
 
-    if (typeof buildCategoryFilters === "function") buildCategoryFilters();
-    if (typeof renderHome === "function") renderHome('all');
+    buildCategoryFilters();
+    renderHome('all');
     
     if (menu.length > 0) {
         const uniqueCats = [...new Set(menu.map(i => i.cat))].filter(c => c);
-        if (uniqueCats.length > 0 && typeof renderMenu === "function") renderMenu(uniqueCats[0]);
-    }
-
-    // Splash Screen-ის დამალვა ჩატვირთვის შემდეგ
-    const splash = document.getElementById('splash-screen');
-    if (splash) {
-        splash.style.display = 'none';
+        if (uniqueCats.length > 0) renderMenu(uniqueCats[0]);
     }
 }
 
-// აპლიკაციის დაწყება
-fetchMenuData();
+// --- Checkout & Bottom Sheet ფუნქციები ---
 
 function openCheckoutFlow() {
     const overlay = document.getElementById('checkout-sheet-overlay');
@@ -253,19 +118,19 @@ function handleMethodSelection(method) {
     updateFinalCheckoutPrice();
 }
 
+// --- პრომო კოდის და ფასის ფუნქციები (განახლებული) ---
+
 function togglePromoField() {
     const container = document.getElementById('promo-collapsible');
     const icon = document.getElementById('promo-plus-icon');
-    const btn = document.getElementById('promo-btn-toggle');
+    if (!container) return;
     
-    if (container.style.maxHeight === '0px' || container.style.maxHeight === '') {
-        container.style.maxHeight = '100px';
-        icon.textContent = '⊖';
-        btn.classList.replace('text-[#1D6FE8]', 'text-[#888]');
+    if (container.style.maxHeight) {
+        container.style.maxHeight = null;
+        if(icon) icon.textContent = '⊕';
     } else {
-        container.style.maxHeight = '0px';
-        icon.textContent = '⊕';
-        btn.classList.replace('text-[#888]', 'text-[#1D6FE8]');
+        container.style.maxHeight = container.scrollHeight + "px";
+        if(icon) icon.textContent = '⊖';
     }
 }
 
@@ -277,7 +142,7 @@ function applyPromoCode() {
     const code = input.value.trim().toUpperCase();
     
     if (code === 'WELCOME') {
-        currentDiscount = 5; 
+        currentDiscount = 5; // 5 ლარიანი ფასდაკლება
         input.classList.remove('border-transparent', 'border-red-500');
         input.classList.add('border-green-500', 'bg-green-50');
         if(errorMsg) errorMsg.classList.add('hidden');
@@ -330,112 +195,46 @@ function updateFinalCheckoutPrice() {
     }
 }
 
-async function submitFinalOrder(event) {
-    if (event && event.preventDefault) event.preventDefault();
+function submitFinalOrder(event) {
+    event.preventDefault();
     
-    const btn = event.target;
-    const originalText = btn ? btn.textContent : "შეკვეთა";
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
     
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = "გადამისამართება...";
-    }
+    // 1. ვიზუალური ეფექტი: "მუშავდება"
+    btn.disabled = true;
+    btn.innerHTML = `
+        <div class="flex items-center justify-center gap-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            მუშავდება...
+        </div>
+    `;
 
-    try {
-        const nameVal = document.getElementById('checkout-name')?.value.trim() || '';
-        const phoneVal = document.getElementById('checkout-phone')?.value.trim() || '';
-        
-        if (!nameVal || !phoneVal) {
-            alert("გთხოვთ შეავსოთ სახელი და ტელეფონი!");
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = originalText;
-            }
-            return;
+    // 2. სიმულაცია (2-3 წამი დაფიქრება)
+    setTimeout(() => {
+        // კალათის გასუფთავება (სურვილისამებრ)
+        if (typeof clearCart === "function") {
+            clearCart();
         }
 
-        const name = encodeURIComponent(nameVal);
-        const phone = encodeURIComponent(phoneVal);
-        const city = encodeURIComponent(document.getElementById('checkout-city')?.value || '');
-        const street = encodeURIComponent(document.getElementById('checkout-street')?.value.trim() || '');
-        const apt = encodeURIComponent(document.getElementById('apt')?.value.trim() || '');
-        const floor = encodeURIComponent(document.getElementById('floor')?.value.trim() || '');
-        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || '');
-        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || '');
+        // 3. გადაყვანა "Orders" ტაბზე
+        showView('orders');
         
-        const totalText = document.getElementById('final-total-price')?.textContent || '0';
-        const total = totalText.replace('₾', '').trim();
+        // ღილაკის პირვანდელ მდგომარეობაში დაბრუნება (შემდეგი შეკვეთისთვის)
+        btn.disabled = false;
+        btn.innerHTML = originalText;
 
-        const itemsArray = Object.values(cart);
-        const itemsList = encodeURIComponent(itemsArray
-            .map(item => `${item.name} (x${item.qty})`)
-            .join(', '));
-
-        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=card`;
-        
-        // მონაცემების გაგზავნა ცხრილში
-        await fetch(SCRIPT_URL + queryParams, {
-            method: 'GET',
-            mode: 'no-cors'
-        });
-
-        const newOrder = {
-            id: Math.floor(Math.random() * 10000),
-            timestamp: new Date().toLocaleTimeString(),
-            items: itemsArray,
-            total: total + ' ₾',
-            address: currentOrderMethod === 'delivery' 
-                     ? `${decodeURIComponent(street)}, ბინა ${decodeURIComponent(apt)}` 
-                     : 'წაღება',
-            status: 'pending'
-        };
-        
-        if (typeof myOrders !== 'undefined') {
-            myOrders.unshift(newOrder);
-            if (typeof renderOrders === "function") renderOrders();
+        // სურვილისამებრ: შეტყობინება მომხმარებელს
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.showAlert("შეკვეთა წარმატებით გაფორმდა!");
         }
-
-        // ბანკის გადახდის დაწყება
-        await startPayment({
-            total: parseFloat(total),
-            id: newOrder.id,
-            customerName: nameVal
-        });
-
-    } catch (error) {
-        console.error("Error submitting order:", error);
-        alert("დაფიქსირდა შეცდომა.");
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.textContent = originalText;
-        }
-    }
+    }, 2500); // 2.5 წამი დაყოვნება
 }
 
-async function startPayment(orderData) {
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'initiatePayment',
-                amount: orderData.total,
-                orderId: orderData.id,
-                customerName: orderData.customerName,
-                publicKey: '10000151'
-            })
-        });
-        const result = await response.json();
-        if (result.redirect_url) {
-            window.location.href = result.redirect_url;
-        }
-    } catch (e) {
-        console.log("Payment redirect error", e);
-    }
-}
-
-// აგრძელებს დანარჩენ ფუნქციებს (changeDetailQty, updateExtraQty და ა.შ.)
-
+// --- რაოდენობის მართვის ფუნქციები დეტალურ გვერდზე ---
 function changeDetailQty(amount) {
     detailQty += amount;
     if (detailQty < 1) detailQty = 1;
@@ -447,6 +246,7 @@ function changeDetailQty(amount) {
     if (item) updateDetailPrice(item.price);
 }
 
+// --- ფუნქცია დანამატების რაოდენობის შესაცვლელად ---
 function updateExtraQty(name, delta, price, basePrice) {
     const safeName = name.replace(/\s+/g, '');
     const currentQty = selectedExtras[name] || 0;
@@ -495,14 +295,13 @@ function updateDetailPrice(basePrice) {
     if (detailBtnPriceEl) detailBtnPriceEl.textContent = '₾' + total.toFixed(2);
 }
 
-// --- პროდუქტის დეტალური გვერდის მართვა ---
 function openProductDetail(id) {
     var item = getItem(id);
     if (!item) return;
 
     window.currentDetailId = id; 
     selectedOptions = { label: '', extra: 0 };
-    selectedExtras = {}; 
+    selectedExtras = {}; // განულება
     detailQty = 1; 
     
     const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
@@ -625,4 +424,217 @@ function openProductDetail(id) {
     };
 
     showView('item-detail');
+}
+
+function buildCategoryFilters() {
+    const container = document.querySelector('.cat-pills-container');
+    if (!container) return;
+    const categories = [...new Set(menu.map(item => item.cat))].filter(c => c);
+    container.innerHTML = categories.map((cat, index) => {
+        return `<div class="cat-pill ${index === 0 ? 'active-cat' : ''}" 
+                     data-cat="${cat}" 
+                     onclick="renderMenu('${cat}', this)">
+                     ${cat}
+                </div>`;
+    }).join('');
+}
+
+function getMediaHtml(val, cls) {
+    if (val && val.startsWith('http')) {
+        return `<img src="${val}" class="${cls}" alt="dish" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
+    }
+    return `<div class="${cls}">${val}</div>`;
+}
+
+(function () {
+    var bar = document.getElementById('splash-bar');
+    var pct = document.getElementById('splash-pct');
+    var p = 0;
+    
+    var iv = setInterval(function () {
+        if (p < 85) {
+            p += Math.random() * 5;
+        } else if (dataLoaded && p < 100) {
+            p += 5;
+        }
+        var currentP = Math.min(Math.round(p), 100);
+        if (bar) bar.style.width = currentP + '%';
+        if (pct) pct.textContent = currentP + '%';
+        if (currentP >= 100) {
+            clearInterval(iv);
+            var s = document.getElementById('splash');
+            if (s) {
+                s.style.opacity = '0';
+                s.style.transition = 'opacity 0.5s ease';
+                setTimeout(function () {
+                    s.style.display = 'none';
+                    document.getElementById('app').classList.remove('hidden');
+                }, 500);
+            }
+        }
+    }, 80);
+    fetchMenuData();
+})();
+
+function showView(n) {
+    prevView = curView; curView = n;
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.add('hidden'); v.classList.remove('active'); });
+    var t = document.getElementById('view-' + n);
+    if (t) { t.classList.remove('hidden'); t.classList.add('active'); t.scrollTop = 0; }
+    document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active-nav', b.dataset.nav === n); });
+    if (n === 'cart') renderCart();
+}
+
+function goBack() { showView(prevView || 'home'); }
+
+function renderHome(f) {
+    var list = (f === 'all' || !f) ? dishes : dishes.filter(function (d) { return d.cat === f; });
+    var grid = document.getElementById('dishes-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = list.map(function (d) {
+        return `
+        <div class="dish-card bg-white rounded-3xl overflow-hidden shadow-sm flex flex-col h-full cursor-pointer" onclick="openProductDetail(${d.id})">
+          <div class="relative h-32 overflow-hidden">
+            ${getMediaHtml(d.emoji, 'w-full h-full object-cover')}
+            ${d.bs ? '<span class="absolute top-2 left-2 bg-[#C9A84C] text-[#0D0D0D] text-[8px] font-bold px-2 py-1 rounded-full uppercase">Best Seller</span>' : ''}
+          </div>
+          <div class="p-3 flex flex-col flex-1">
+            <h4 class="font-bold text-sm text-[#0D0D0D] line-clamp-1">${d.ka}</h4>
+            <div class="mt-auto pt-2 flex items-center justify-between">
+                <span class="text-[#1D6FE8] font-bold text-sm">₾${d.price.toFixed(2)}</span>
+                <button class="w-7 h-7 bg-[#1D6FE8] text-white rounded-lg flex items-center justify-center" onclick="event.stopPropagation();openProductDetail(${d.id})">+</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+}
+
+function renderMenu(cat, element) {
+    if (element) {
+        document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active-cat'));
+        element.classList.add('active-cat');
+    }
+    if (!cat) {
+        var ap = document.querySelector('.cat-pill.active-cat');
+        cat = ap ? ap.dataset.cat : (menu.length > 0 ? menu[0].cat : '');
+    }
+    renderMenuItems(menu.filter(function (i) { return i.cat === cat; }));
+}
+
+function renderMenuItems(items) {
+    var el = document.getElementById('menu-list');
+    if (!el) return;
+    if (!items.length) { el.innerHTML = '<p class="text-center text-[#AAA] py-10">No dishes found</p>'; return; }
+    el.innerHTML = items.map(function (i) {
+        return `
+        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm cursor-pointer" onclick="openProductDetail(${i.id})">
+          <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+            ${getMediaHtml(i.emoji, 'w-full h-full object-cover')}
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-[#0D0D0D] text-sm truncate">${i.ka}</h4>
+            <p class="text-[10px] text-[#888] line-clamp-1 mt-0.5">${i.desc || ''}</p>
+            <div class="flex items-center justify-between mt-2">
+                <span class="text-[#1D6FE8] font-bold text-sm">₾${i.price.toFixed(2)}</span>
+                <button class="w-6 h-6 bg-[#F5F3EF] text-[#0D0D0D] rounded-lg flex items-center justify-center font-bold" onclick="event.stopPropagation();openProductDetail(${i.id})">+</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+}
+
+function getItem(id) { 
+    return menu.find(function (d) { return d.id === parseInt(id); }); 
+}
+
+function addToCart(id, options = { label: '', extra: 0 }, extras = []) {
+    var it = getItem(id); if (!it) return;
+    
+    var extrasKey = extras.map(e => e.label + 'x' + e.qty).sort().join('|');
+    var cartId = id + '-' + (options.label || 'std') + '-' + extrasKey;
+    
+    var extrasPrice = extras.reduce((sum, e) => sum + (e.price * e.qty), 0);
+    var finalPrice = it.price + options.extra + extrasPrice;
+    
+    var displayName = it.ka;
+    if (options.label) displayName += ' (' + options.label + ')';
+    if (extras.length > 0) {
+        displayName += ' + ' + extras.map(e => `${e.label}(${e.qty})`).join(', ');
+    }
+
+    if (cart[cartId]) {
+        cart[cartId].qty++;
+    } else {
+        cart[cartId] = {
+            id: it.id,
+            cartId: cartId,
+            name: displayName,
+            price: finalPrice,
+            emoji: it.emoji,
+            qty: 1
+        };
+    }
+    badge();
+}
+
+function removeFromCart(cartId) {
+    if (!cart[cartId]) return;
+    cart[cartId].qty--;
+    if (cart[cartId].qty <= 0) delete cart[cartId];
+    badge(); renderCart();
+}
+
+function badge() {
+    var t = Object.values(cart).reduce(function (s, i) { return s + i.qty; }, 0);
+    ['nav-cart-badge', 'menu-cart-badge'].forEach(function (id) {
+        var el = document.getElementById(id); if (!el) return;
+        if (t > 0) { el.textContent = t; el.classList.remove('hidden'); } else el.classList.add('hidden');
+    });
+}
+
+function renderCart() {
+    var c = document.getElementById('cart-items');
+    if (!c) return;
+    var items = Object.values(cart);
+    if (!items.length) {
+        c.innerHTML = `<div class="text-center py-20"><div class="text-5xl mb-4">🛒</div><p class="text-[#888]">Your cart is empty</p></div>`;
+        setSummary(0); return;
+    }
+    c.innerHTML = items.map(function (i) {
+        return `
+        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm">
+          <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">${getMediaHtml(i.emoji, 'w-full h-full object-cover')}</div>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-sm text-[#0D0D0D] truncate">${i.name}</h4>
+            <p class="text-[#1D6FE8] font-bold text-sm mt-1">₾${i.price.toFixed(2)}</p>
+          </div>
+          <div class="flex items-center bg-[#F5F3EF] rounded-xl p-1">
+            <button class="w-7 h-7 flex items-center justify-center font-bold" onclick="removeFromCart('${i.cartId}')">−</button>
+            <span class="w-6 text-center text-xs font-bold">${i.qty}</span>
+            <button class="w-7 h-7 flex items-center justify-center font-bold" onclick="cart['${i.cartId}'].qty++; badge(); renderCart();">+</button>
+          </div>
+        </div>`;
+    }).join('');
+    setSummary(items.reduce(function (s, i) { return s + i.price * i.qty; }, 0));
+}
+
+function setSummary(sub) {
+    var delivery = sub > 0 ? 2.50 : 0;
+    var service = sub > 0 ? 1.00 : 0;
+    var tot = sub + delivery + service;
+    
+    const subEl = document.getElementById('summary-subtotal');
+    const totEl = document.getElementById('summary-total');
+    const checkEl = document.getElementById('checkout-total');
+    
+    if (subEl) subEl.textContent = '₾' + sub.toFixed(2);
+    if (totEl) totEl.textContent = '₾' + tot.toFixed(2);
+    if (checkEl) checkEl.textContent = '₾' + tot.toFixed(2);
+}
+
+function clearCart() {
+    cart = {};
+    badge();
+    renderCart();
 }
