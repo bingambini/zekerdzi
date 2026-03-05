@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdhn4-ima053RQOHJZTQyWJ6yGBjkAelZaSt2MNoI-ZBS-WCpQeq4XlAdIXApc5FxO/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -331,33 +331,65 @@ async function submitFinalOrder(event) {
     btn.textContent = "იგზავნება...";
 
     try {
-        // მნიშვნელობების წამოღება და ენკოდირება (უსაფრთხო გაგზავნისთვის)
-        const name = encodeURIComponent(document.getElementById('checkout-name').value.trim());
-        const phone = encodeURIComponent(document.getElementById('checkout-phone').value.trim());
-        const city = encodeURIComponent(document.getElementById('checkout-city').value);
-        const street = encodeURIComponent(document.getElementById('checkout-street').value.trim());
-        
+        // მონაცემების ამოღება
+        const name = encodeURIComponent(document.getElementById('checkout-name')?.value.trim() || '');
+        const phone = encodeURIComponent(document.getElementById('checkout-phone')?.value.trim() || '');
+        const city = encodeURIComponent(document.getElementById('checkout-city')?.value || '');
+        const street = encodeURIComponent(document.getElementById('checkout-street')?.value.trim() || '');
         const apt = encodeURIComponent(document.getElementById('apt')?.value.trim() || '');
         const floor = encodeURIComponent(document.getElementById('floor')?.value.trim() || '');
-        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || '');
-        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || '');
+        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || ''); // სადარბაზო
+        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || ''); // პრომო
         
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
         const total = totalText.replace('₾', '').trim();
 
-        if (!name || !phone || (currentOrderMethod === 'delivery' && !street)) {
-            alert("გთხოვთ შეავსოთ სახელი, ტელეფონი და მისამართი!");
+        // ვაწყობთ პროდუქტების სიას (K სვეტისთვის)
+        const itemsList = encodeURIComponent(Object.values(cart)
+            .map(item => `${item.name} (x${item.qty})`)
+            .join(', '));
+
+        if (!name || !phone) {
+            alert("გთხოვთ შეავსოთ სახელი და ტელეფონი!");
             btn.disabled = false;
             btn.textContent = originalText;
             return;
         }
+
+        // შენი ბოლო SCRIPT URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec";
+
+        // !!! ყურადღება: აქ სახელები (ent, items, promoCode) ზუსტად უნდა ემთხვეოდეს Apps Script-ს !!!
+        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
+
+        console.log("იგზავნება მონაცემები:", SCRIPT_URL + queryParams);
+
+        // გაგზავნა
+        await fetch(SCRIPT_URL + queryParams, {
+            method: 'GET',
+            mode: 'no-cors'
+        });
+
+        alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
+        
+        if (typeof clearCart === "function") clearCart();
+        showView('home');
+
+    } catch (error) {
+        console.error("Error submitting order:", error);
+        alert("დაფიქსირდა შეცდომა გაგზავნისას.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
 
 const itemsList = encodeURIComponent(Object.values(cart)
     .map(item => `${item.name} (x${item.qty})`)
     .join(', '));
 
         // შენი SCRIPT URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdhn4-ima053RQOHJZTQyWJ6yGBjkAelZaSt2MNoI-ZBS-WCpQeq4XlAdIXApc5FxO/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec";
 
 // ვაწყობთ URL პარამეტრებს (GET მოთხოვნისთვის)
 const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
