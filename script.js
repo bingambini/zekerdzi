@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyS_86MK4YeOhtvIaDK5JGfYCK32bJqGC2Vsny0UFMaCVFZedEqQPdXZQTm-dxc-6uX/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAYhWvGhuZ9iJSAtaCd1cCHLprwrJe-qMtcCofuoeLxH7jsIw9nPJVwVMmE74EVX7H/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -325,43 +325,71 @@ function updateFinalCheckoutPrice() {
 async function submitFinalOrder(event) {
     if (event) event.preventDefault();
 
-    // 1. მონაცემების შეგროვება HTML-იდან
+    const submitBtn = document.querySelector('.submit-order-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'იგზავნება...';
+    }
+
+    // 1. მონაცემების შეგროვება ზუსტად იმ ID-ებით, რაც HTML-ში გვაქვს
     const orderData = {
-        name: document.getElementById('checkout-name')?.value || '',
+        customerName: document.getElementById('checkout-name')?.value || '',
         phone: document.getElementById('checkout-phone')?.value || '',
         city: document.getElementById('checkout-city')?.value || '',
-        address: `${document.getElementById('checkout-street')?.value || ''}, ბინა: ${document.getElementById('checkout-apt')?.value || ''}, სართ: ${document.getElementById('checkout-floor')?.value || ''}`,
-        payment: document.querySelector('input[name="payment-method"]:checked')?.value || 'card',
-        promo: document.getElementById('promo-input')?.value || 'არაა გამოყენებული',
-        total: document.getElementById('final-total-price')?.textContent || '0',
-        items: JSON.stringify(cart), // კალათის შიგთავსი
-        date: new Date().toLocaleString('ka-GE')
+        street: document.getElementById('checkout-street')?.value || '',
+        apt: document.getElementById('checkout-apt')?.value || '',
+        floor: document.getElementById('checkout-floor')?.value || '',
+        ent: document.getElementById('checkout-ent')?.value || '',
+        promo: document.getElementById('promo-input')?.value || 'None',
+        method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash',
+        total: document.getElementById('final-total-price')?.textContent.replace('₾', '').trim() || '0',
+        items: cart.map(item => `${item.name} (${item.quantity}x)`).join(', '), // კალათის პროდუქტების სია ტექსტად
+        userId: "Guest" // აქ შეგიძლია მომავალში ავტორიზებული მომხმარებლის ID ჩასვა
     };
 
-    // 2. ვალიდაცია (რომ ცარიელი არ გაიგზავნოს)
-    if (!orderData.phone || !orderData.name) {
-        alert('გთხოვთ შეავსოთ სახელი და ტელეფონის ნომერი');
+    // 2. ვალიდაცია (რომ ცარიელი არ გაიგზავნოს აუცილებელი ველები)
+    if (!orderData.phone || !orderData.customerName || !orderData.street) {
+        alert('გთხოვთ შეავსოთ აუცილებელი ველები: სახელი, ტელეფონი და ქუჩა');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'შეკვეთის გაფორმება';
+        }
         return;
     }
 
-    // 3. გაგზავნა Google Apps Script-ზე
-    const SCRIPT_URL = 'შენი_GOOGLE_SCRIPT_URL_აქ';
+    // 3. გაგზავნა შენს Google Script-ზე
+    const SCRIPT_URL = 'აქ_ჩასვი_შენი_GOOGLE_SCRIPT_URL';
 
     try {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors', // მნიშვნელოვანია CORS პრობლემის თავიდან ასაცილებლად
-            cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
         });
 
-        alert('შეკვეთა წარმატებით გაიგზავნა!');
-        clearCart();
-        showView('home');
+        const result = await response.json();
+
+        if (result.result === 'success') {
+            alert('შეკვეთა მიღებულია! ID: ' + result.orderId);
+            
+            // თუ გადახდის მეთოდი ბარათია და გვაქვს ლინკი, გადავიყვანოთ ბანკის გვერდზე
+            if (orderData.method === 'card' && result.payment_url) {
+                window.location.href = result.payment_url;
+            } else {
+                // თუ ნაღდი ფულია, უბრალოდ ვასუფთავებთ კალათას
+                clearCart();
+                showView('home');
+            }
+        } else {
+            throw new Error(result.error);
+        }
     } catch (error) {
         console.error('Error:', error);
-        alert('დაფიქსირდა შეცდომა გაგზავნისას');
+        alert('დაფიქსირდა შეცდომა. შეკვეთა მაინც გაიგზავნა Sheets-ში, გთხოვთ დაგვიკავშირდეთ.');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'შეკვეთის გაფორმება';
+        }
     }
 }
 
