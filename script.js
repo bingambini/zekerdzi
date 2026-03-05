@@ -199,14 +199,23 @@ function processMenuData(allData) {
     dishes = formattedData.filter(item => item.bs === true);
     menu = formattedData;
 
-    buildCategoryFilters();
-    renderHome('all');
+    if (typeof buildCategoryFilters === "function") buildCategoryFilters();
+    if (typeof renderHome === "function") renderHome('all');
     
     if (menu.length > 0) {
         const uniqueCats = [...new Set(menu.map(i => i.cat))].filter(c => c);
-        if (uniqueCats.length > 0) renderMenu(uniqueCats[0]);
+        if (uniqueCats.length > 0 && typeof renderMenu === "function") renderMenu(uniqueCats[0]);
+    }
+
+    // Splash Screen-ის დამალვა ჩატვირთვის შემდეგ
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.display = 'none';
     }
 }
+
+// აპლიკაციის დაწყება
+fetchMenuData();
 
 function openCheckoutFlow() {
     const overlay = document.getElementById('checkout-sheet-overlay');
