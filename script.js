@@ -11,7 +11,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_A5zRwLlmLIoPx1sV1UG9d0UoFumpfWdtIW8fnnFCp97m9JOHa-Sv3sncgfBVom4s/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQVwjbzQ4M5N838or5No7cuf0fZOoEMqS3u47_U_L62sDdZWl1S0II9V7sMMO-UGPj/exec';
 
 var dishes = []; 
 var menu = [];   
