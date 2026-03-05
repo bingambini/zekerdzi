@@ -195,84 +195,43 @@ function updateFinalCheckoutPrice() {
     }
 }
 
-async function submitFinalOrder(event) {
-    // 1. ელემენტების ამოღება
-    const nameInput = document.getElementById('checkout-name');
-    const phoneInput = document.getElementById('checkout-phone');
-    const cityInput = document.getElementById('checkout-city');
-    const streetInput = document.getElementById('checkout-street');
-    const aptInput = document.getElementById('checkout-apt');
-    const floorInput = document.getElementById('checkout-floor');
-    const entInput = document.getElementById('checkout-ent');
-    const promoInput = document.getElementById('promo-input');
-    const payMethodInput = document.querySelector('input[name="payment-method"]:checked');
+function submitFinalOrder(event) {
+    event.preventDefault();
     
-    // ფასის ელემენტები
-    const finalPriceElem = document.getElementById('final-total-price');
-    const summaryPriceElem = document.getElementById('summary-total');
-
-    // 2. ვალიდაცია
-    const name = nameInput ? nameInput.value.trim() : "";
-    const phone = phoneInput ? phoneInput.value.trim() : "";
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
     
-    if (!name || !phone) {
-        alert("გთხოვთ შეავსოთ სახელი და ნომერი!");
-        return;
-    }
+    // 1. ვიზუალური ეფექტი: "მუშავდება"
+    btn.disabled = true;
+    btn.innerHTML = `
+        <div class="flex items-center justify-center gap-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            მუშავდება...
+        </div>
+    `;
 
-    // 3. ფასის და პროდუქტების მომზადება
-    let rawPrice = "0";
-    if (finalPriceElem && finalPriceElem.textContent.includes('₾')) {
-        rawPrice = finalPriceElem.textContent;
-    } else if (summaryPriceElem) {
-        rawPrice = summaryPriceElem.textContent;
-    }
-    const totalAmount = rawPrice.replace(/[^0-9.]/g, '').trim();
-
-    // კალათის ნივთების ფორმირება (ობიექტის გარდაქმნა მასივად .map-ისთვის)
-    const itemsSummary = (typeof cart !== 'undefined' && Object.keys(cart).length > 0)
-        ? Object.values(cart).map(item => `${item.name} x${item.qty}`).join(', ')
-        : "No items info";
-
-    // 4. ღილაკის დაბლოკვა
-    const confirmBtn = event.target;
-    const originalText = confirmBtn.textContent;
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = "მუშავდება...";
-
-    // 5. URL-ის აწყობა ყველა პარამეტრით
-    const params = new URLSearchParams({
-        action: 'payment',
-        amount: totalAmount,
-        customerName: name,
-        phone: phone,
-        town: cityInput ? cityInput.value : "",
-        address: streetInput ? streetInput.value : "",
-        bina: aptInput ? aptInput.value : "",
-        sartuli: floorInput ? floorInput.value : "",
-        sadarbazo: entInput ? entInput.value : "",
-        promo: promoInput ? promoInput.value : "None",
-        method: payMethodInput ? payMethodInput.value : "card",
-        items: itemsSummary,
-        userId: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "Guest"
-    });
-
-    try {
-        const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
-        const data = await response.json();
-
-        if (data.payment_url) {
-            // თუ ყველაფერი კარგადაა, გადავიდეს გადახდაზე
-            window.location.href = data.payment_url;
-        } else {
-            throw new Error(data.error || "შეცდომა გადახდისას");
+    // 2. სიმულაცია (2-3 წამი დაფიქრება)
+    setTimeout(() => {
+        // კალათის გასუფთავება (სურვილისამებრ)
+        if (typeof clearCart === "function") {
+            clearCart();
         }
-    } catch (error) {
-        console.error("Order Error:", error);
-        alert("ვერ მოხერხდა შეკვეთის გაგზავნა: " + error.message);
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = originalText;
-    }
+
+        // 3. გადაყვანა "Orders" ტაბზე
+        showView('orders');
+        
+        // ღილაკის პირვანდელ მდგომარეობაში დაბრუნება (შემდეგი შეკვეთისთვის)
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+
+        // სურვილისამებრ: შეტყობინება მომხმარებელს
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.showAlert("შეკვეთა წარმატებით გაფორმდა!");
+        }
+    }, 2500); // 2.5 წამი დაყოვნება
 }
 
 // --- რაოდენობის მართვის ფუნქციები დეტალურ გვერდზე ---
