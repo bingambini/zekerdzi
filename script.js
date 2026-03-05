@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzgyY9FGHoNT_JDvgzN1_DAF7Pk9NW3r4j5HqnQQivr4B_u0tfGcTqPNanYHPhUEw_D/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJP-w1dceZ-SPLDtlWixBl5nNZu5u0W92z3MQEHGh8Lu85qPAIHbJQTfi8gU98A_aP/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -357,7 +357,7 @@ async function submitFinalOrder(event) {
             .join(', '));
 
         // შენი SCRIPT URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMCw6W9OhLAxewue_fQWxfR5zuwJ_SIOHNudkDpuImGakpWoH9KXGHzblvCOevDKYc/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJP-w1dceZ-SPLDtlWixBl5nNZu5u0W92z3MQEHGh8Lu85qPAIHbJQTfi8gU98A_aP/exec";
 
         // ვაწყობთ URL პარამეტრებს (GET მოთხოვნისთვის)
         const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&entrance=${ent}&items=${itemsList}&total=${total}&promo=${promo}&method=cash`;
