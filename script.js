@@ -322,7 +322,6 @@ function updateFinalCheckoutPrice() {
 }
 
 async function submitFinalOrder(event) {
-    // 1. მოვლენის შეჩერება და ღილაკის დაბლოკვა
     if (event && event.preventDefault) event.preventDefault();
     
     const btn = event.target;
@@ -334,7 +333,6 @@ async function submitFinalOrder(event) {
     }
 
     try {
-        // 2. მონაცემების ამოღება
         const nameVal = document.getElementById('checkout-name')?.value.trim() || '';
         const phoneVal = document.getElementById('checkout-phone')?.value.trim() || '';
         
@@ -359,21 +357,19 @@ async function submitFinalOrder(event) {
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
         const total = totalText.replace('₾', '').trim();
 
-        // 3. პროდუქტების სიის მომზადება
         const itemsArray = Object.values(cart);
         const itemsList = encodeURIComponent(itemsArray
             .map(item => `${item.name} (x${item.qty})`)
             .join(', '));
 
-        // 4. მონაცემების გაგზავნა ცხრილში (შენი ძველი ლოგიკა)
         const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=card`;
         
+        // მონაცემების გაგზავნა ცხრილში
         await fetch(SCRIPT_URL + queryParams, {
             method: 'GET',
             mode: 'no-cors'
         });
 
-        // 5. ლოკალური ისტორიისთვის შენახვა
         const newOrder = {
             id: Math.floor(Math.random() * 10000),
             timestamp: new Date().toLocaleTimeString(),
@@ -390,7 +386,7 @@ async function submitFinalOrder(event) {
             if (typeof renderOrders === "function") renderOrders();
         }
 
-        // 6. ბანკის გადახდის დაწყება
+        // ბანკის გადახდის დაწყება
         await startPayment({
             total: parseFloat(total),
             id: newOrder.id,
@@ -408,7 +404,6 @@ async function submitFinalOrder(event) {
     }
 }
 
-// ეს ფუნქცია აუცილებელია გადახდის გვერდის გამოსაძახებლად
 async function startPayment(orderData) {
     try {
         const response = await fetch(SCRIPT_URL, {
@@ -429,6 +424,8 @@ async function startPayment(orderData) {
         console.log("Payment redirect error", e);
     }
 }
+
+// აგრძელებს დანარჩენ ფუნქციებს (changeDetailQty, updateExtraQty და ა.შ.)
 
 function changeDetailQty(amount) {
     detailQty += amount;
