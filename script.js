@@ -441,45 +441,87 @@ function showReceipt(orderId) {
 // --- 7. Checkout და Google Sheets ინტეგრაცია ---
 async function submitFinalOrder(event) {
     if (event) event.preventDefault();
-    const btn = event.target;
-    const originalText = btn.textContent;
+    
+    const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value;
+    const total = document.getElementById('final-total-price')?.textContent.replace('₾', '').trim() || '0';
+
+    // 1. ჯერ ვინახავთ შეკვეთის მონაცემებს დროებით (Pending სტატუსით)
+    // 2. თუ ბარათია, გადავდივართ ბანკის გვერდზე
+    if (paymentMethod === 'card') {
+        goToBankPage(total);
+    } else {
+        // თუ ნაღდი ფულია, პირდაპირ ვასრულებთ
+        processOrderInDatabase('CASH_PENDING');
+    }
+}
+
+function goToBankPage(amount) {
+    // რეალურ API-ში აქ ხდება POST მოთხოვნა Access Token-ით 
+    // და ბანკი გვიბრუნებს გადახდის ბმულს.
+    // ჩვენს სატესტო ვერსიაში "გადავიყვანოთ" მომხმარებელი ვიზუალურ სიმულაციაზე:
+
+    const appContainer = document.getElementById('app');
+    appContainer.classList.add('blur-sm', 'pointer-events-none'); // აპლიკაციის დაფარვა
+
+    // ვქმნით სრულეკრანიან "ბანკის გვერდს"
+    const bankPage = document.createElement('div');
+    bankPage.id = 'external-bank-page';
+    bankPage.className = 'fixed inset-0 bg-[#F4F4F4] z-[300] flex flex-col';
+    
+    bankPage.innerHTML = `
+        <div class="bg-white p-4 shadow-sm flex items-center justify-between">
+            <img src="https://bankofgeorgia.ge/img/logo.svg" style="height: 24px;">
+            <div class="text-[10px] font-bold text-gray-400">SECURE CHECKOUT</div>
+        </div>
+        
+        <div class="p-6 mt-10 max-w-sm mx-auto w-full">
+            <div class="bg-white rounded-3xl p-8 shadow-xl shadow-black/5">
+                <p class="text-center text-gray-400 text-xs mb-2 font-bold uppercase">Order Payment</p>
+                <h1 class="text-center text-3xl font-black mb-10">₾${amount}</h1>
+                
+                <div class="space-y-6">
+                    <input type="text" placeholder="Card Number" class="w-full border-b-2 py-2 outline-none focus:border-orange-500">
+                    <div class="flex gap-4">
+                        <input type="text" placeholder="MM/YY" class="w-full border-b-2 py-2 outline-none focus:border-orange-500">
+                        <input type="password" placeholder="CVV" class="w-full border-b-2 py-2 outline-none focus:border-orange-500">
+                    </div>
+                </div>
+
+                <button onclick="completeBankTransaction()" 
+                    class="w-full bg-[#FF5E00] text-white py-4 rounded-2xl font-bold mt-10 active:scale-95 transition-all">
+                    PAY NOW
+                </button>
+            </div>
+            
+            <button onclick="cancelBankTransaction()" class="w-full mt-6 text-gray-400 text-sm font-medium">
+                Cancel and return to store
+            </button>
+        </div>
+    `;
+    document.body.appendChild(bankPage);
+}
+
+function completeBankTransaction() {
+    const btn = document.querySelector('#external-bank-page button');
+    btn.innerHTML = '<span class="animate-spin inline-block mr-2">↻</span> Processing...';
     btn.disabled = true;
-    btn.textContent = "იგზავნება...";
 
-    try {
-        const name = document.getElementById('checkout-name').value.trim();
-        const phone = document.getElementById('checkout-phone').value.trim();
-        const city = document.getElementById('checkout-city').value;
-        const street = document.getElementById('checkout-street').value.trim();
-        const total = document.getElementById('final-total-price')?.textContent.replace('₾', '').trim() || '0';
+    // სიმულაცია: ბანკი ამუშავებს ტრანზაქციას 2 წამი
+    setTimeout(() => {
+        // გადახდა წარმატებულია! ვაბრუნებთ მომხმარებელს აპლიკაციაში
+        document.getElementById('external-bank-page').remove();
+        document.getElementById('app').classList.remove('blur-sm', 'pointer-events-none');
+        
+        // ვასრულებთ შეკვეთას ბაზაში
+        processOrderInDatabase('CARD_PAID');
+    }, 2000);
+}
 
-        if (!name || !phone || !street) {
-            alert("გთხოვთ შეავსოთ სახელი, ტელეფონი და ქუჩა!");
-            btn.disabled = false; btn.textContent = originalText; return;
-        }
-
-        const itemsList = Object.values(cart).map(item => `${item.name} (x${item.qty})`).join(', ');
-        const orderData = {
-            customerName: name, phone: phone, city: city, street: street, items: itemsList, total: total,
-            method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash'
-        };
-
-        await fetch(SCRIPT_URL, {
-            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
-
-        const newOrder = {
-            id: Math.floor(Math.random() * 10000), timestamp: new Date().toLocaleTimeString(),
-            items: Object.values(cart), total: total + ' ₾', address: street, status: 'pending'
-        };
-        myOrders.unshift(newOrder); renderOrders();
-        alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
-        clearCart(); showView('home');
-    } catch (error) {
-        console.error("Error submitting order:", error); alert("დაფიქსირდა შეცდომა.");
-    } finally {
-        btn.disabled = false; btn.textContent = originalText;
+function cancelBankTransaction() {
+    if(confirm("ნამდვილად გსურთ გადახდის გაუქმება?")) {
+        document.getElementById('external-bank-page').remove();
+        document.getElementById('app').classList.remove('blur-sm', 'pointer-events-none');
+        alert("გადახდა გაუქმებულია.");
     }
 }
 
