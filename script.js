@@ -388,9 +388,6 @@ const itemsList = encodeURIComponent(Object.values(cart)
     .map(item => `${item.name} (x${item.qty})`)
     .join(', '));
 
-        // შენი SCRIPT URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec";
-
 // ვაწყობთ URL პარამეტრებს (GET მოთხოვნისთვის)
 const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
         
