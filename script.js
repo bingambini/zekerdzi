@@ -355,8 +355,10 @@ async function submitFinalOrder(event) {
             return;
         }
 
-        // 5. კალათის პროდუქტების ფორმატირება (რომ ექსელში კარგად გამოჩნდეს)
-        const itemsList = cart.map(item => `${item.name} (x${item.quantity})`).join(', ');
+// 5. კალათის პროდუქტების ფორმატირება (ობიექტის გარდაქმნა მასივად და შემდეგ ტექსტად)
+const itemsList = Object.values(cart)
+    .map(item => `${item.name} (x${item.qty})`)
+    .join(', ');
 
         const orderData = {
             customerName: name,
