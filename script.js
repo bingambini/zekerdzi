@@ -195,23 +195,23 @@ function updateFinalCheckoutPrice() {
     }
 }
 
-async function submitFinalOrder() {
+async function submitFinalOrder(event) {
+    // 1. ელემენტების მოძებნა
     const nameInput = document.getElementById('checkout-name');
     const phoneInput = document.getElementById('checkout-phone');
-    
-    // ვცდილობთ ფასის ამოღებას ორივე შესაძლო ადგილიდან
     const finalPriceElem = document.getElementById('final-total-price');
     const summaryPriceElem = document.getElementById('summary-total');
 
+    // 2. მონაცემების ამოღება და ვალიდაცია
     const name = nameInput ? nameInput.value.trim() : "";
     const phone = phoneInput ? phoneInput.value.trim() : "";
     
     if (!name || !phone) {
-        alert("გთხოვთ შეავსოთ სახელი და ნომერი!");
+        alert("გთხოვთ შეავსოთ სახელი და ტელეფონის ნომერი!");
         return;
     }
 
-    // ფასის ამოღების ლოგიკა: ჯერ ვეძებთ ფინალურს, მერე ქართის ჯამს
+    // 3. ფასის ამოღების ლოგიკა (Fallback-ით)
     let rawPrice = "0";
     if (finalPriceElem && finalPriceElem.textContent.includes('₾')) {
         rawPrice = finalPriceElem.textContent;
@@ -219,25 +219,32 @@ async function submitFinalOrder() {
         rawPrice = summaryPriceElem.textContent;
     }
 
-    const totalAmount = rawPrice.replace('₾', '').trim();
+    // მხოლოდ ციფრების და წერტილის დატოვება
+    const totalAmount = rawPrice.replace(/[^0-9.]/g, '').trim();
     
     if (parseFloat(totalAmount) <= 0 || isNaN(parseFloat(totalAmount))) {
         alert("კალათა ცარიელია ან თანხა არასწორია!");
         return;
     }
 
-    // ღილაკის ანიმაცია
-    const confirmBtn = event.target; // აიღებს იმ ღილაკს, რომელსაც დააჭირე
+    // 4. ღილაკის ვიზუალური მართვა (დაბლოკვა)
+    const confirmBtn = event.target; 
     const originalText = confirmBtn.textContent;
     confirmBtn.disabled = true;
+    confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
     confirmBtn.textContent = "მუშავდება...";
 
     try {
-        // აქ ჩასვი შენი SCRIPT_URL
+        // 5. მოთხოვნა სერვერზე (გადახდის ლინკის მისაღებად)
+        // დარწმუნდი, რომ SCRIPT_URL განსაზღვრული გაქვს ფაილის დასაწყისში
         const response = await fetch(`${SCRIPT_URL}?action=payment&amount=${totalAmount}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`);
+        
+        if (!response.ok) throw new Error("სერვერმა დააბრუნა შეცდომა");
+        
         const data = await response.json();
 
         if (data.payment_url) {
+            // გადამისამართება ბანკის გვერდზე
             window.location.href = data.payment_url;
         } else {
             throw new Error(data.error || "გადახდის ლინკი ვერ შეიქმნა");
@@ -245,7 +252,10 @@ async function submitFinalOrder() {
     } catch (error) {
         console.error("Order Error:", error);
         alert("შეცდომა: " + error.message);
+        
+        // შეცდომის შემთხვევაში ღილაკის უკან დაბრუნება
         confirmBtn.disabled = false;
+        confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         confirmBtn.textContent = originalText;
     }
 }
