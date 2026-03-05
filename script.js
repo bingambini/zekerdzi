@@ -11,7 +11,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCg5HhLnT7i2lUtbiB8kHIWgQQQlMvlkgnwOVJgo1UXu8E8yyWUdjcmAJuFlewuxFN/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_A5zRwLlmLIoPx1sV1UG9d0UoFumpfWdtIW8fnnFCp97m9JOHa-Sv3sncgfBVom4s/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -453,23 +453,10 @@ async function submitFinalOrder(event) {
     btn.innerHTML = '<span class="animate-pulse">ბანკთან კავშირი...</span>';
 
     if (paymentMethod === 'card') {
-        try {
-            // ვიყენებთ უკვე არსებულ SCRIPT_URL-ს გადახდის ინიციალიზაციისთვის
-            const response = await fetch(`${SCRIPT_URL}?action=CREATE_PAYMENT&amount=${total}`);
-            const data = await response.json();
-
-            if (data.success && data.hpp_url) {
-                // მომხმარებლის გადაყვანა ბანკის ნამდვილ სატესტო გვერდზე
-                window.location.href = data.hpp_url;
-            } else {
-                throw new Error(data.error || "გადახდა ვერ დაიწყო");
-            }
-        } catch (error) {
-            console.error("BOG Error:", error);
-            alert("ბანკთან დაკავშირება ვერ მოხერხდა.");
-            btn.disabled = false;
-            btn.innerHTML = originalBtnText;
-        }
+        // იმის გამო, რომ ბრაუზერი ბლოკავს ფონურ (fetch) მოთხოვნას CORS-ის გამო,
+        // ვიყენებთ პირდაპირ გადამისამართებას. მომხმარებელი გადავა Google Script-ში,
+        // რომელიც თავის მხრივ გადაიყვანს ბანკის გვერდზე.
+        window.location.href = `${SCRIPT_URL}?action=CREATE_PAYMENT&amount=${total}`;
     } else {
         // ნაღდი ანგარიშსწორება
         processOrderInDatabase('CASH_PENDING');
@@ -491,7 +478,7 @@ async function processOrderInDatabase(status = 'Pending') {
     });
 
     try {
-        // აქაც ვიყენებთ გლობალურ SCRIPT_URL-ს
+        // აქ ვიყენებთ POST-ს, რადგან ეს მონაცემების შესანახადაა
         await fetch(`${SCRIPT_URL}?${params.toString()}`, { method: 'POST' });
         alert("შეკვეთა მიღებულია!");
         clearCart();
