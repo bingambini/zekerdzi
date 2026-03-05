@@ -322,53 +322,47 @@ function updateFinalCheckoutPrice() {
     }
 }
 
-function submitFinalOrder(event) {
-    event.preventDefault();
-    const btn = event.currentTarget;
-    const originalText = btn.innerHTML;
-    const finalTotal = document.getElementById('final-total-price').textContent;
-    const addressInput = document.querySelector('input[placeholder*="ქუჩა"]');
-    
-    btn.disabled = true;
-    btn.innerHTML = `
-        <div class="flex items-center justify-center gap-2">
-            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            მუშავდება...
-        </div>
-    `;
+async function submitFinalOrder(event) {
+    if (event) event.preventDefault();
 
-    setTimeout(() => {
-        const orderId = Math.floor(1000 + Math.random() * 9000);
-        const newOrder = {
-            id: orderId,
-            total: finalTotal,
-            status: 'preparing',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            items: Object.values(cart), // ვინახავთ პროდუქტების სიას ჩეკისთვის
-            address: addressInput ? addressInput.value : "თვითგატანა"
-        };
+    // 1. მონაცემების შეგროვება HTML-იდან
+    const orderData = {
+        name: document.getElementById('checkout-name')?.value || '',
+        phone: document.getElementById('checkout-phone')?.value || '',
+        city: document.getElementById('checkout-city')?.value || '',
+        address: `${document.getElementById('checkout-street')?.value || ''}, ბინა: ${document.getElementById('checkout-apt')?.value || ''}, სართ: ${document.getElementById('checkout-floor')?.value || ''}`,
+        payment: document.querySelector('input[name="payment-method"]:checked')?.value || 'card',
+        promo: document.getElementById('promo-input')?.value || 'არაა გამოყენებული',
+        total: document.getElementById('final-total-price')?.textContent || '0',
+        items: JSON.stringify(cart), // კალათის შიგთავსი
+        date: new Date().toLocaleString('ka-GE')
+    };
 
-        myOrders.unshift(newOrder);
-        renderOrders();
-        
-        if (typeof clearCart === "function") clearCart();
-        showView('orders');
-        
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+    // 2. ვალიდაცია (რომ ცარიელი არ გაიგზავნოს)
+    if (!orderData.phone || !orderData.name) {
+        alert('გთხოვთ შეავსოთ სახელი და ტელეფონის ნომერი');
+        return;
+    }
 
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.showAlert("შეკვეთა წარმატებით გაფორმდა!");
-        }
+    // 3. გაგზავნა Google Apps Script-ზე
+    const SCRIPT_URL = 'შენი_GOOGLE_SCRIPT_URL_აქ';
 
-        setTimeout(() => {
-            updateOrderStatus(orderId, 'delivered');
-        }, 15000);
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // მნიშვნელოვანია CORS პრობლემის თავიდან ასაცილებლად
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
 
-    }, 2000);
+        alert('შეკვეთა წარმატებით გაიგზავნა!');
+        clearCart();
+        showView('home');
+    } catch (error) {
+        console.error('Error:', error);
+        alert('დაფიქსირდა შეცდომა გაგზავნისას');
+    }
 }
 
 function changeDetailQty(amount) {
