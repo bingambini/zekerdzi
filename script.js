@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpLBRYhfukBU0vU2RNwE0PpLlyGjPVVQkc3AHp5vAdXQOSU9TAmmWWZPdHieue0fhm/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxX4VFpGCdJfJu5TQc35uxgjxGlWWXf0A15R652E9VUBR8DbuS8Ocgy8IajAyiXRoIc/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -335,10 +335,18 @@ async function submitFinalOrder(event) {
         const phone = document.getElementById('checkout-phone').value.trim();
         const city = document.getElementById('checkout-city').value;
         const street = document.getElementById('checkout-street').value.trim();
-        const total = document.getElementById('final-total-price')?.textContent.replace('₾', '').trim() || '0';
+        
+        // ახალი ველების წამოღება
+        const house = document.getElementById('checkout-house')?.value.trim() || '';
+        const floor = document.getElementById('checkout-floor')?.value.trim() || '';
+        const entrance = document.getElementById('checkout-entrance')?.value.trim() || '';
+        const promo = document.getElementById('promo-input')?.value.trim() || '';
+        
+        const totalText = document.getElementById('final-total-price')?.textContent || '0';
+        const total = totalText.replace('₾', '').trim();
 
-        if (!name || !phone || !street) {
-            alert("გთხოვთ შეავსოთ სახელი, ტელეფონი და ქუჩა!");
+        if (!name || !phone || (currentOrderMethod === 'delivery' && !street)) {
+            alert("გთხოვთ შეავსოთ სახელი, ტელეფონი და მისამართი!");
             btn.disabled = false;
             btn.textContent = originalText;
             return;
@@ -348,17 +356,21 @@ async function submitFinalOrder(event) {
             .map(item => `${item.name} (x${item.qty})`)
             .join(', ');
 
-        const orderData = {
-            customerName: name,
-            phone: phone,
-            city: city,
-            street: street,
-            items: itemsList,
-            total: total,
-            method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash'
-        };
+        // მონაცემები, რომელიც იგზავნება Google Sheets-ში
+const orderData = {
+    customerName: name,
+    phone: phone,
+    city: city,
+    street: street,
+    house: house,      // გადაეცემა როგორც p.house
+    floor: floor,      // გადაეცემა როგორც p.floor
+    entrance: entrance, // გადაეცემა როგორც p.entrance
+    promo: promo,      // გადაეცემა როგორც p.promo
+    items: itemsList,
+    total: total,
+    method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash'
+};
 
-        // მონაცემების გაგზავნა Google Sheets-ში
         await fetch(SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -366,18 +378,17 @@ async function submitFinalOrder(event) {
             body: JSON.stringify(orderData)
         });
 
-        // ✅ შეკვეთის შენახვა აპლიკაციაში (Orders ტაბისთვის)
         const newOrder = {
-            id: Math.floor(Math.random() * 10000), 
+            id: Math.floor(Math.random() * 10000),
             timestamp: new Date().toLocaleTimeString(),
-            items: Object.values(cart), 
+            items: Object.values(cart),
             total: total + ' ₾',
-            address: street,
-            status: 'pending' 
+            address: currentOrderMethod === 'delivery' ? `${street}, ${house}` : 'წაღება',
+            status: 'pending'
         };
         
-        myOrders.unshift(newOrder); 
-        renderOrders(); 
+        myOrders.unshift(newOrder);
+        renderOrders();
 
         alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
         
