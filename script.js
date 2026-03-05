@@ -77,7 +77,6 @@ function renderOrders() {
     container.innerHTML = (hasCurrent ? currentHTML : '') + (hasPast ? pastHTML : '');
 }
 
-// რესტორნის ჩეკის (Receipt) ვიზუალიზაცია
 function showReceipt(orderId) {
     const order = myOrders.find(o => o.id === orderId);
     if (!order) return;
@@ -335,7 +334,7 @@ async function submitFinalOrder(event) {
     }
 
     try {
-        // 2. მონაცემების ამოღება ID-ების მიხედვით
+        // 2. მონაცემების ამოღება
         const nameVal = document.getElementById('checkout-name')?.value.trim() || '';
         const phoneVal = document.getElementById('checkout-phone')?.value.trim() || '';
         
@@ -348,7 +347,6 @@ async function submitFinalOrder(event) {
             return;
         }
 
-        // 3. მონაცემების მომზადება
         const name = encodeURIComponent(nameVal);
         const phone = encodeURIComponent(phoneVal);
         const city = encodeURIComponent(document.getElementById('checkout-city')?.value || '');
@@ -361,13 +359,12 @@ async function submitFinalOrder(event) {
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
         const total = totalText.replace('₾', '').trim();
 
-        // 4. პროდუქტების სიის მომზადება
+        // 3. პროდუქტების სიის მომზადება
         const itemsList = encodeURIComponent(Object.values(cart)
             .map(item => `${item.name} (x${item.qty})`)
             .join(', '));
 
-        // 5. URL-ის აწყობა და გაგზავნა
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec";
+        // 4. URL-ის აწყობა და გაგზავნა
         const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
         
         console.log("იგზავნება მონაცემები...");
@@ -377,13 +374,13 @@ async function submitFinalOrder(event) {
             mode: 'no-cors'
         });
 
-        // 6. ლოკალური ისტორიისთვის ობიექტის შექმნა
+        // 5. ლოკალური ისტორიისთვის ობიექტის შექმნა
         const newOrder = {
             id: Math.floor(Math.random() * 10000),
             timestamp: new Date().toLocaleTimeString(),
             items: Object.values(cart),
             total: total + ' ₾',
-            address: (typeof currentOrderMethod !== 'undefined' && currentOrderMethod === 'delivery') 
+            address: currentOrderMethod === 'delivery' 
                      ? `${decodeURIComponent(street)}, ბინა ${decodeURIComponent(apt)}` 
                      : 'წაღება',
             status: 'pending'
@@ -394,7 +391,6 @@ async function submitFinalOrder(event) {
             if (typeof renderOrders === "function") renderOrders();
         }
 
-        // 7. დასრულება
         alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
         if (typeof clearCart === "function") clearCart();
         if (typeof showView === "function") showView('home');
@@ -407,47 +403,6 @@ async function submitFinalOrder(event) {
             btn.disabled = false;
             btn.textContent = originalText;
         }
-    }
-}
-
-const itemsList = encodeURIComponent(Object.values(cart)
-    .map(item => `${item.name} (x${item.qty})`)
-    .join(', '));
-
-// ვაწყობთ URL პარამეტრებს (GET მოთხოვნისთვის)
-const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
-        
-        // გაგზავნა GET მეთოდით
-        await fetch(SCRIPT_URL + queryParams, {
-            method: 'GET',
-            mode: 'no-cors'
-        });
-
-        // ლოკალური ისტორიისთვის ობიექტის შექმნა
-        const newOrder = {
-            id: Math.floor(Math.random() * 10000),
-            timestamp: new Date().toLocaleTimeString(),
-            items: Object.values(cart),
-            total: total + ' ₾',
-            address: currentOrderMethod === 'delivery' ? `${decodeURIComponent(street)}, ბინა ${decodeURIComponent(apt)}` : 'წაღება',
-            status: 'pending'
-        };
-        
-        if (typeof myOrders !== 'undefined') {
-            myOrders.unshift(newOrder);
-            if (typeof renderOrders === "function") renderOrders();
-        }
-
-        alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
-        if (typeof clearCart === "function") clearCart();
-        showView('home');
-
-    } catch (error) {
-        console.error("Error submitting order:", error);
-        alert("დაფიქსირდა შეცდომა გაგზავნისას.");
-    } finally {
-        btn.disabled = false;
-        btn.textContent = originalText;
     }
 }
 
