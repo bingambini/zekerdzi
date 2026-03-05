@@ -326,8 +326,7 @@ async function submitFinalOrder(event) {
     // 1. მოვლენის შეჩერება და ღილაკის დაბლოკვა
     if (event && event.preventDefault) event.preventDefault();
     
-    // ვპოულობთ ღილაკს უსაფრთხოდ
-    const btn = document.querySelector('button[onclick*="submitFinalOrder"]') || (event ? event.target : null);
+    const btn = event.target;
     const originalText = btn ? btn.textContent : "შეკვეთა";
     
     if (btn) {
@@ -340,7 +339,6 @@ async function submitFinalOrder(event) {
         const nameVal = document.getElementById('checkout-name')?.value.trim() || '';
         const phoneVal = document.getElementById('checkout-phone')?.value.trim() || '';
         
-        // ვალიდაცია: თუ სახელი ან ტელეფონი ცარიელია
         if (!nameVal || !phoneVal) {
             alert("გთხოვთ შეავსოთ სახელი და ტელეფონი!");
             if (btn) {
@@ -350,7 +348,7 @@ async function submitFinalOrder(event) {
             return;
         }
 
-        // 3. მონაცემების მომზადება (Encoding)
+        // 3. მონაცემების მომზადება
         const name = encodeURIComponent(nameVal);
         const phone = encodeURIComponent(phoneVal);
         const city = encodeURIComponent(document.getElementById('checkout-city')?.value || '');
@@ -361,40 +359,50 @@ async function submitFinalOrder(event) {
         const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || '');
         
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
-        const total = encodeURIComponent(totalText.replace('₾', '').trim());
+        const total = totalText.replace('₾', '').trim();
 
-        // 4. პროდუქტების სიის მომზადება (Items)
-        let itemsRaw = "კალათა ცარიელია";
-        if (typeof cart !== 'undefined' && Object.keys(cart).length > 0) {
-            itemsRaw = Object.values(cart)
-                .map(item => `${item.name} (x${item.qty})`)
-                .join(', ');
-        }
-        const itemsList = encodeURIComponent(itemsRaw);
+        // 4. პროდუქტების სიის მომზადება
+        const itemsList = encodeURIComponent(Object.values(cart)
+            .map(item => `${item.name} (x${item.qty})`)
+            .join(', '));
 
-        // 5. URL-ის აწყობა (გამოვიყენოთ არსებული SCRIPT_URL)
-        // თუ SCRIPT_URL ზემოთ არ გაქვს გამოცხადებული, აქ ჩაწერე პირდაპირ ლინკი ბრჭყალებში
-        const finalUrl = `https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
+        // 5. URL-ის აწყობა და გაგზავნა
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFlguNYQjoIKBzay9ZuCpm1RyoW9aiEO0yM2O59CtNtDuMtSjftBrKoQdwSk4tbwXU/exec";
+        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
+        
+        console.log("იგზავნება მონაცემები...");
 
-        console.log("მონაცემები იგზავნება...");
-
-        // 6. გაგზავნა
-        await fetch(finalUrl, {
+        await fetch(SCRIPT_URL + queryParams, {
             method: 'GET',
             mode: 'no-cors'
         });
 
-        // 7. წარმატების დასასრული
-        alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
+        // 6. ლოკალური ისტორიისთვის ობიექტის შექმნა
+        const newOrder = {
+            id: Math.floor(Math.random() * 10000),
+            timestamp: new Date().toLocaleTimeString(),
+            items: Object.values(cart),
+            total: total + ' ₾',
+            address: (typeof currentOrderMethod !== 'undefined' && currentOrderMethod === 'delivery') 
+                     ? `${decodeURIComponent(street)}, ბინა ${decodeURIComponent(apt)}` 
+                     : 'წაღება',
+            status: 'pending'
+        };
         
+        if (typeof myOrders !== 'undefined') {
+            myOrders.unshift(newOrder);
+            if (typeof renderOrders === "function") renderOrders();
+        }
+
+        // 7. დასრულება
+        alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
         if (typeof clearCart === "function") clearCart();
         if (typeof showView === "function") showView('home');
 
     } catch (error) {
         console.error("Error submitting order:", error);
-        alert("დაფიქსირდა შეცდომა გაგზავნისას. გთხოვთ სცადოთ მოგვიანებით.");
+        alert("დაფიქსირდა შეცდომა გაგზავნისას.");
     } finally {
-        // ღილაკის დაბრუნება საწყის მდგომარეობაში
         if (btn) {
             btn.disabled = false;
             btn.textContent = originalText;
