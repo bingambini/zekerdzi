@@ -209,25 +209,30 @@ async function submitFinalOrder() {
         return;
     }
 
-    // 2. თანხის მომზადება (სიმბოლოების მოცილება)
-    const totalAmount = totalElement.textContent.replace('₾', '').trim();
+    // 2. თანხის მომზადება - დაცვით, რომ textContent-მა შეცდომა არ ამოაგდოს
+    let totalAmount = "0";
+    if (totalElement && totalElement.textContent) {
+        totalAmount = totalElement.textContent.replace('₾', '').trim();
+    } else {
+        // თუ ელემენტი არ არის, ვცადოთ summary-total-დან ამოღება
+        const altTotal = document.getElementById('summary-total');
+        if (altTotal) totalAmount = altTotal.textContent.replace('₾', '').trim();
+    }
     
     if (parseFloat(totalAmount) <= 0) {
-        alert("კალათა ცარიელია!");
+        alert("კალათა ცარიელია ან თანხა ვერ დაითვალა!");
         return;
     }
 
-    // 3. ვიზუალური დასტური მომხმარებლისთვის
+    // 3. ვიზუალური დასტური
     const confirmBtn = document.querySelector('.confirm-btn');
-    const originalText = confirmBtn.textContent;
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = "კავშირი ბანკთან...";
+    const originalText = confirmBtn ? confirmBtn.textContent : "დადასტურება";
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "კავშირი ბანკთან...";
+    }
 
     try {
-        // !!! აქ ჩასვი შენი Google Apps Script-ის "Exec" ლინკი !!!
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-RVHYUxokmKU_xGsfOwk3TWkQwgA0pW2sYeH3_aOz5jjQJyany1b8FZm-3WcKLf-4/exec'; 
-
-        // 4. მოთხოვნა ბანკის გადახდის ლინკზე (GET მოთხოვნა action=payment-ით)
         const response = await fetch(`${SCRIPT_URL}?action=payment&amount=${totalAmount}`);
         
         if (!response.ok) throw new Error("სერვერმა დააბრუნა შეცდომა");
@@ -235,18 +240,21 @@ async function submitFinalOrder() {
         const data = await response.json();
 
         if (data.payment_url) {
-            // 5. გადაყვანა საქართველოს ბანკის ოფიციალურ სატესტო გვერდზე
             window.location.href = data.payment_url;
         } else {
             alert("შეცდომა: " + (data.error || "ბანკმა ვერ დააგენერირა ლინკი"));
-            confirmBtn.disabled = false;
-            confirmBtn.textContent = originalText;
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
+            }
         }
     } catch (error) {
         console.error("Payment Error:", error);
-        alert("ბანკთან კავშირი ვერ დამყარდა. შეამოწმეთ ინტერნეტი ან სკრიპტის ლინკი.");
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = originalText;
+        alert("ბანკთან კავშირი ვერ დამყარდა.");
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = originalText;
+        }
     }
 }
 
