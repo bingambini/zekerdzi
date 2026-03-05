@@ -1,4 +1,4 @@
-// Telegram WebApp-ის ინიციალიზაცია და ეკრანზე გაშლა (მობილური ოპტიმიზაციისთვის)
+// Telegram WebApp-ის ინიციალიზაცია და ეკრანზე გაშლა
 const tg = window.Telegram.WebApp;
 if (tg) {
     tg.expand();
@@ -14,10 +14,76 @@ var dataLoaded = false;
 
 // ცვლადები დეტალური გვერდისთვის
 var selectedOptions = { label: '', extra: 0 };
-var selectedExtras = {}; // ახალი ობიექტი დანამატების რაოდენობისთვის
+var selectedExtras = {}; 
 var detailQty = 1; 
-let currentOrderMethod = 'delivery'; // მეთოდის გლობალური ცვლადი
-let currentDiscount = 0; // გლობალური ცვლადი ფასდაკლებისთვის
+let currentOrderMethod = 'delivery'; 
+let currentDiscount = 0; 
+
+// --- შეკვეთების მართვის ახალი ლოგიკა ---
+let myOrders = []; 
+
+function renderOrders() {
+    const container = document.querySelector('#view-orders .mx-5.mt-5');
+    if (!container) return;
+
+    if (myOrders.length === 0) {
+        container.innerHTML = '<div class="text-center py-10 text-[#AAA]">შეკვეთები არ არის</div>';
+        return;
+    }
+
+    let currentHTML = '<p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3 font-bold">მიმდინარე</p>';
+    let pastHTML = '<p class="text-[10px] uppercase tracking-widest text-[#AAA] mb-3 mt-6 font-bold">წარსული</p>';
+    
+    let hasCurrent = false;
+    let hasPast = false;
+
+    myOrders.forEach(order => {
+        const isDelivered = order.status === 'delivered';
+        const card = `
+            <div class="bg-white rounded-[28px] p-5 shadow-sm border border-[#F0F0F0] mb-4 transition-all duration-500">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest ${isDelivered ? 'text-[#888]' : 'text-[#1D6FE8]'} flex items-center gap-1.5">
+                            ${isDelivered ? '✅ ჩაბარდა' : `
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1D6FE8] opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#1D6FE8]"></span>
+                                </span>
+                                მზადდება
+                            `}
+                        </span>
+                        <h4 class="text-lg font-display font-bold text-[#0D0D0D] mt-1">Order #${order.id}</h4>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-[#AAA] font-bold uppercase tracking-tighter">${order.timestamp}</p>
+                        <p class="text-sm font-bold ${isDelivered ? 'text-[#888]' : 'text-[#1D6FE8]'} mt-1">${order.total}</p>
+                    </div>
+                </div>
+                <button class="w-full ${isDelivered ? 'bg-[#F5F3EF] text-[#0D0D0D]' : 'bg-[#0D0D0D] text-white'} py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest active:scale-[0.98] transition-all">
+                    ${isDelivered ? 'თავიდან შეკვეთა' : 'დეტალები / თრექინგი'}
+                </button>
+            </div>
+        `;
+
+        if (isDelivered) {
+            pastHTML += card;
+            hasPast = true;
+        } else {
+            currentHTML += card;
+            hasCurrent = true;
+        }
+    });
+
+    container.innerHTML = (hasCurrent ? currentHTML : '') + (hasPast ? pastHTML : '');
+}
+
+function updateOrderStatus(orderId, newStatus) {
+    const order = myOrders.find(o => o.id === orderId);
+    if (order) {
+        order.status = newStatus;
+        renderOrders();
+    }
+}
 
 async function fetchMenuData() {
     const cache = localStorage.getItem('menu_cache');
@@ -80,8 +146,6 @@ function processMenuData(allData) {
     }
 }
 
-// --- Checkout & Bottom Sheet ფუნქციები ---
-
 function openCheckoutFlow() {
     const overlay = document.getElementById('checkout-sheet-overlay');
     const sheet = document.getElementById('checkout-sheet');
@@ -118,8 +182,6 @@ function handleMethodSelection(method) {
     updateFinalCheckoutPrice();
 }
 
-// --- პრომო კოდის და ფასის ფუნქციები (განახლებული) ---
-
 function togglePromoField() {
     const container = document.getElementById('promo-collapsible');
     const icon = document.getElementById('promo-plus-icon');
@@ -142,7 +204,7 @@ function applyPromoCode() {
     const code = input.value.trim().toUpperCase();
     
     if (code === 'WELCOME') {
-        currentDiscount = 5; // 5 ლარიანი ფასდაკლება
+        currentDiscount = 5; 
         input.classList.remove('border-transparent', 'border-red-500');
         input.classList.add('border-green-500', 'bg-green-50');
         if(errorMsg) errorMsg.classList.add('hidden');
@@ -197,11 +259,10 @@ function updateFinalCheckoutPrice() {
 
 function submitFinalOrder(event) {
     event.preventDefault();
-    
     const btn = event.currentTarget;
     const originalText = btn.innerHTML;
+    const finalTotal = document.getElementById('final-total-price').textContent;
     
-    // 1. ვიზუალური ეფექტი: "მუშავდება"
     btn.disabled = true;
     btn.innerHTML = `
         <div class="flex items-center justify-center gap-2">
@@ -213,28 +274,40 @@ function submitFinalOrder(event) {
         </div>
     `;
 
-    // 2. სიმულაცია (2-3 წამი დაფიქრება)
     setTimeout(() => {
-        // კალათის გასუფთავება (სურვილისამებრ)
-        if (typeof clearCart === "function") {
-            clearCart();
-        }
+        // 1. ახალი ორდერის ობიექტის შექმნა
+        const orderId = Math.floor(1000 + Math.random() * 9000);
+        const newOrder = {
+            id: orderId,
+            total: finalTotal,
+            status: 'preparing',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        myOrders.unshift(newOrder); // ვამატებთ სიის დასაწყისში
+        renderOrders();
+        
+        // 2. კალათის გასუფთავება
+        if (typeof clearCart === "function") clearCart();
 
         // 3. გადაყვანა "Orders" ტაბზე
         showView('orders');
         
-        // ღილაკის პირვანდელ მდგომარეობაში დაბრუნება (შემდეგი შეკვეთისთვის)
         btn.disabled = false;
         btn.innerHTML = originalText;
 
-        // სურვილისამებრ: შეტყობინება მომხმარებელს
         if (window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.showAlert("შეკვეთა წარმატებით გაფორმდა!");
         }
-    }, 2500); // 2.5 წამი დაყოვნება
+
+        // 4. სტატუსის ავტომატური შეცვლა სიმულაციისთვის (მაგ. 10 წამში)
+        setTimeout(() => {
+            updateOrderStatus(orderId, 'delivered');
+        }, 10000);
+
+    }, 2500);
 }
 
-// --- რაოდენობის მართვის ფუნქციები დეტალურ გვერდზე ---
 function changeDetailQty(amount) {
     detailQty += amount;
     if (detailQty < 1) detailQty = 1;
@@ -246,7 +319,6 @@ function changeDetailQty(amount) {
     if (item) updateDetailPrice(item.price);
 }
 
-// --- ფუნქცია დანამატების რაოდენობის შესაცვლელად ---
 function updateExtraQty(name, delta, price, basePrice) {
     const safeName = name.replace(/\s+/g, '');
     const currentQty = selectedExtras[name] || 0;
@@ -301,7 +373,7 @@ function openProductDetail(id) {
 
     window.currentDetailId = id; 
     selectedOptions = { label: '', extra: 0 };
-    selectedExtras = {}; // განულება
+    selectedExtras = {}; 
     detailQty = 1; 
     
     const qtyEl = document.querySelector('#view-item-detail .fixed span.w-8');
@@ -482,7 +554,9 @@ function showView(n) {
     var t = document.getElementById('view-' + n);
     if (t) { t.classList.remove('hidden'); t.classList.add('active'); t.scrollTop = 0; }
     document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active-nav', b.dataset.nav === n); });
+    
     if (n === 'cart') renderCart();
+    if (n === 'orders') renderOrders();
 }
 
 function goBack() { showView(prevView || 'home'); }
