@@ -229,10 +229,9 @@ async function submitFinalOrder(event) {
     }
     const totalAmount = rawPrice.replace(/[^0-9.]/g, '').trim();
 
-    // კალათის ნივთების ფორმირება ტექსტად (მაგ: პიცა x2, კოკა-კოლა x1)
-    // ვვარაუდობ რომ კალათის მასივს ჰქვია 'cart'
-    const itemsSummary = typeof cart !== 'undefined' 
-        ? cart.map(item => `${item.name}${item.size ? ' ('+item.size+')' : ''} x${item.quantity}`).join(', ')
+    // კალათის ნივთების ფორმირება (ობიექტის გარდაქმნა მასივად .map-ისთვის)
+    const itemsSummary = (typeof cart !== 'undefined' && Object.keys(cart).length > 0)
+        ? Object.values(cart).map(item => `${item.name} x${item.qty}`).join(', ')
         : "No items info";
 
     // 4. ღილაკის დაბლოკვა
