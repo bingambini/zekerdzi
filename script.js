@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJP-w1dceZ-SPLDtlWixBl5nNZu5u0W92z3MQEHGh8Lu85qPAIHbJQTfi8gU98A_aP/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdhn4-ima053RQOHJZTQyWJ6yGBjkAelZaSt2MNoI-ZBS-WCpQeq4XlAdIXApc5FxO/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -357,11 +357,11 @@ const itemsList = encodeURIComponent(Object.values(cart)
     .join(', '));
 
         // შენი SCRIPT URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJP-w1dceZ-SPLDtlWixBl5nNZu5u0W92z3MQEHGh8Lu85qPAIHbJQTfi8gU98A_aP/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdhn4-ima053RQOHJZTQyWJ6yGBjkAelZaSt2MNoI-ZBS-WCpQeq4XlAdIXApc5FxO/exec";
 
-        // ვაწყობთ URL პარამეტრებს (GET მოთხოვნისთვის)
-        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&entrance=${ent}&items=${itemsList}&total=${total}&promo=${promo}&method=cash`;
-
+// ვაწყობთ URL პარამეტრებს (GET მოთხოვნისთვის)
+const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
+        
         // გაგზავნა GET მეთოდით
         await fetch(SCRIPT_URL + queryParams, {
             method: 'GET',
