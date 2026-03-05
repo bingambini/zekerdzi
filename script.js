@@ -330,7 +330,7 @@ async function submitFinalOrder(event) {
     
     if (btn) {
         btn.disabled = true;
-        btn.textContent = "იგზავნება...";
+        btn.textContent = "გადამისამართება...";
     }
 
     try {
@@ -347,62 +347,67 @@ async function submitFinalOrder(event) {
             return;
         }
 
-        const name = encodeURIComponent(nameVal);
-        const phone = encodeURIComponent(phoneVal);
-        const city = encodeURIComponent(document.getElementById('checkout-city')?.value || '');
-        const street = encodeURIComponent(document.getElementById('checkout-street')?.value.trim() || '');
-        const apt = encodeURIComponent(document.getElementById('apt')?.value.trim() || '');
-        const floor = encodeURIComponent(document.getElementById('floor')?.value.trim() || '');
-        const ent = encodeURIComponent(document.getElementById('entrance')?.value.trim() || '');
-        const promo = encodeURIComponent(document.getElementById('promo-input')?.value.trim() || '');
+        const city = document.getElementById('checkout-city')?.value || '';
+        const street = document.getElementById('checkout-street')?.value.trim() || '';
+        const apt = document.getElementById('apt')?.value.trim() || '';
+        const promo = document.getElementById('promo-input')?.value.trim() || '';
         
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
-        const total = totalText.replace('₾', '').trim();
+        const total = parseFloat(totalText.replace('₾', '').trim());
 
         // 3. პროდუქტების სიის მომზადება
-        const itemsList = encodeURIComponent(Object.values(cart)
+        const itemsList = Object.values(cart)
             .map(item => `${item.name} (x${item.qty})`)
-            .join(', '));
+            .join(', ');
 
-        // 4. URL-ის აწყობა და გაგზავნა
-        const queryParams = `?customerName=${name}&phone=${phone}&city=${city}&street=${street}&house=${apt}&floor=${floor}&ent=${ent}&items=${itemsList}&total=${total}&promoCode=${promo}&method=cash`;
-        
-        console.log("იგზავნება მონაცემები...");
-
-        await fetch(SCRIPT_URL + queryParams, {
-            method: 'GET',
-            mode: 'no-cors'
-        });
-
-        // 5. ლოკალური ისტორიისთვის ობიექტის შექმნა
-        const newOrder = {
-            id: Math.floor(Math.random() * 10000),
-            timestamp: new Date().toLocaleTimeString(),
-            items: Object.values(cart),
-            total: total + ' ₾',
-            address: currentOrderMethod === 'delivery' 
-                     ? `${decodeURIComponent(street)}, ბინა ${decodeURIComponent(apt)}` 
-                     : 'წაღება',
-            status: 'pending'
+        // 4. გადახდის ობიექტის მომზადება
+        const orderData = {
+            id: Math.floor(Math.random() * 100000),
+            total: total,
+            customerName: nameVal,
+            phone: phoneVal,
+            address: `${city}, ${street}, ბინა ${apt}`,
+            items: itemsList,
+            promo: promo
         };
-        
-        if (typeof myOrders !== 'undefined') {
-            myOrders.unshift(newOrder);
-            if (typeof renderOrders === "function") renderOrders();
-        }
 
-        alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
-        if (typeof clearCart === "function") clearCart();
-        if (typeof showView === "function") showView('home');
+        // 5. გადახდის დაწყება
+        await startPayment(orderData);
 
     } catch (error) {
-        console.error("Error submitting order:", error);
-        alert("დაფიქსირდა შეცდომა გაგზავნისას.");
-    } finally {
+        console.error("Error starting payment:", error);
+        alert("დაფიქსირდა შეცდომა გადახდის დაწყებისას.");
         if (btn) {
             btn.disabled = false;
             btn.textContent = originalText;
         }
+    }
+}
+
+// ახალი ფუნქცია ბანკთან დასაკავშირებლად
+async function startPayment(orderData) {
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'initiatePayment',
+                amount: orderData.total,
+                orderId: orderData.id,
+                customerName: orderData.customerName,
+                publicKey: '10000151'
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.redirect_url) {
+            window.location.href = result.redirect_url;
+        } else {
+            throw new Error("გადახდის ლინკი ვერ მოიძებნა");
+        }
+    } catch (error) {
+        console.error("Payment error:", error);
+        alert("ბანკთან დაკავშირება ვერ მოხერხდა.");
     }
 }
 
@@ -595,223 +600,4 @@ function openProductDetail(id) {
     };
 
     showView('item-detail');
-}
-
-// --- ფილტრები და კატეგორიები ---
-function buildCategoryFilters() {
-    const container = document.querySelector('.cat-pills-container');
-    if (!container) return;
-    const categories = [...new Set(menu.map(item => item.cat))].filter(c => c);
-    container.innerHTML = categories.map((cat, index) => {
-        return `<div class="cat-pill ${index === 0 ? 'active-cat' : ''}" 
-                     data-cat="${cat}" 
-                     onclick="renderMenu('${cat}', this)">
-                     ${cat}
-                </div>`;
-    }).join('');
-}
-
-function getMediaHtml(val, cls) {
-    if (val && val.startsWith('http')) {
-        return `<img src="${val}" class="${cls}" alt="dish" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
-    }
-    return `<div class="${cls}">${val}</div>`;
-}
-
-// --- ინიციალიზაცია და Splash Screen ---
-(function () {
-    var bar = document.getElementById('splash-bar');
-    var pct = document.getElementById('splash-pct');
-    var p = 0;
-    
-    var iv = setInterval(function () {
-        if (p < 85) {
-            p += Math.random() * 5;
-        } else if (dataLoaded && p < 100) {
-            p += 5;
-        }
-        var currentP = Math.min(Math.round(p), 100);
-        if (bar) bar.style.width = currentP + '%';
-        if (pct) pct.textContent = currentP + '%';
-        if (currentP >= 100) {
-            clearInterval(iv);
-            var s = document.getElementById('splash');
-            if (s) {
-                s.style.opacity = '0';
-                s.style.transition = 'opacity 0.5s ease';
-                setTimeout(function () {
-                    s.style.display = 'none';
-                    document.getElementById('app').classList.remove('hidden');
-                }, 500);
-            }
-        }
-    }, 80);
-    fetchMenuData();
-})();
-
-// --- ნავიგაცია და რენდერი ---
-function showView(n) {
-    prevView = curView; curView = n;
-    document.querySelectorAll('.view').forEach(function (v) { v.classList.add('hidden'); v.classList.remove('active'); });
-    var t = document.getElementById('view-' + n);
-    if (t) { t.classList.remove('hidden'); t.classList.add('active'); t.scrollTop = 0; }
-    document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active-nav', b.dataset.nav === n); });
-    
-    if (n === 'cart') renderCart();
-    if (n === 'orders') renderOrders();
-}
-
-function goBack() { showView(prevView || 'home'); }
-
-function renderHome(f) {
-    var list = (f === 'all' || !f) ? dishes : dishes.filter(function (d) { return d.cat === f; });
-    var grid = document.getElementById('dishes-grid');
-    if (!grid) return;
-    
-    grid.innerHTML = list.map(function (d) {
-        return `
-        <div class="dish-card bg-white rounded-3xl overflow-hidden shadow-sm flex flex-col h-full cursor-pointer" onclick="openProductDetail(${d.id})">
-          <div class="relative h-32 overflow-hidden">
-            ${getMediaHtml(d.emoji, 'w-full h-full object-cover')}
-            ${d.bs ? '<span class="absolute top-2 left-2 bg-[#C9A84C] text-[#0D0D0D] text-[8px] font-bold px-2 py-1 rounded-full uppercase">Best Seller</span>' : ''}
-          </div>
-          <div class="p-3 flex flex-col flex-1">
-            <h4 class="font-bold text-sm text-[#0D0D0D] line-clamp-1">${d.ka}</h4>
-            <div class="mt-auto pt-2 flex items-center justify-between">
-                <span class="text-[#1D6FE8] font-bold text-sm">₾${d.price.toFixed(2)}</span>
-                <button class="w-7 h-7 bg-[#1D6FE8] text-white rounded-lg flex items-center justify-center" onclick="event.stopPropagation();openProductDetail(${d.id})">+</button>
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-}
-
-function renderMenu(cat, element) {
-    if (element) {
-        document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active-cat'));
-        element.classList.add('active-cat');
-    }
-    if (!cat) {
-        var ap = document.querySelector('.cat-pill.active-cat');
-        cat = ap ? ap.dataset.cat : (menu.length > 0 ? menu[0].cat : '');
-    }
-    renderMenuItems(menu.filter(function (i) { return i.cat === cat; }));
-}
-
-function renderMenuItems(items) {
-    var el = document.getElementById('menu-list');
-    if (!el) return;
-    if (!items.length) { el.innerHTML = '<p class="text-center text-[#AAA] py-10">No dishes found</p>'; return; }
-    el.innerHTML = items.map(function (i) {
-        return `
-        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm cursor-pointer" onclick="openProductDetail(${i.id})">
-          <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-            ${getMediaHtml(i.emoji, 'w-full h-full object-cover')}
-          </div>
-          <div class="flex-1 min-w-0">
-            <h4 class="font-bold text-[#0D0D0D] text-sm truncate">${i.ka}</h4>
-            <p class="text-[10px] text-[#888] line-clamp-1 mt-0.5">${i.desc || ''}</p>
-            <div class="flex items-center justify-between mt-2">
-                <span class="text-[#1D6FE8] font-bold text-sm">₾${i.price.toFixed(2)}</span>
-                <button class="w-6 h-6 bg-[#F5F3EF] text-[#0D0D0D] rounded-lg flex items-center justify-center font-bold" onclick="event.stopPropagation();openProductDetail(${i.id})">+</button>
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-}
-
-function getItem(id) { 
-    return menu.find(function (d) { return d.id === parseInt(id); }); 
-}
-
-// --- კალათის ლოგიკა ---
-function addToCart(id, options = { label: '', extra: 0 }, extras = []) {
-    var it = getItem(id); if (!it) return;
-    
-    var extrasKey = extras.map(e => e.label + 'x' + e.qty).sort().join('|');
-    var cartId = id + '-' + (options.label || 'std') + '-' + extrasKey;
-    
-    var extrasPrice = extras.reduce((sum, e) => sum + (e.price * e.qty), 0);
-    var finalPrice = it.price + options.extra + extrasPrice;
-    
-    var displayName = it.ka;
-    if (options.label) displayName += ' (' + options.label + ')';
-    if (extras.length > 0) {
-        displayName += ' + ' + extras.map(e => `${e.label}(${e.qty})`).join(', ');
-    }
-
-    if (cart[cartId]) {
-        cart[cartId].qty++;
-    } else {
-        cart[cartId] = {
-            id: it.id,
-            cartId: cartId,
-            name: displayName,
-            price: finalPrice,
-            emoji: it.emoji,
-            qty: 1
-        };
-    }
-    badge();
-}
-
-function removeFromCart(cartId) {
-    if (!cart[cartId]) return;
-    cart[cartId].qty--;
-    if (cart[cartId].qty <= 0) delete cart[cartId];
-    badge(); renderCart();
-}
-
-function badge() {
-    var t = Object.values(cart).reduce(function (s, i) { return s + i.qty; }, 0);
-    ['nav-cart-badge', 'menu-cart-badge'].forEach(function (id) {
-        var el = document.getElementById(id); if (!el) return;
-        if (t > 0) { el.textContent = t; el.classList.remove('hidden'); } else el.classList.add('hidden');
-    });
-}
-
-function renderCart() {
-    var c = document.getElementById('cart-items');
-    if (!c) return;
-    var items = Object.values(cart);
-    if (!items.length) {
-        c.innerHTML = `<div class="text-center py-20"><div class="text-5xl mb-4">🛒</div><p class="text-[#888]">Your cart is empty</p></div>`;
-        setSummary(0); return;
-    }
-    c.innerHTML = items.map(function (i) {
-        return `
-        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm">
-          <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">${getMediaHtml(i.emoji, 'w-full h-full object-cover')}</div>
-          <div class="flex-1 min-w-0">
-            <h4 class="font-bold text-sm text-[#0D0D0D] truncate">${i.name}</h4>
-            <p class="text-[#1D6FE8] font-bold text-sm mt-1">₾${i.price.toFixed(2)}</p>
-          </div>
-          <div class="flex items-center bg-[#F5F3EF] rounded-xl p-1">
-            <button class="w-7 h-7 flex items-center justify-center font-bold" onclick="removeFromCart('${i.cartId}')">−</button>
-            <span class="w-6 text-center text-xs font-bold">${i.qty}</span>
-            <button class="w-7 h-7 flex items-center justify-center font-bold" onclick="cart['${i.cartId}'].qty++; badge(); renderCart();">+</button>
-          </div>
-        </div>`;
-    }).join('');
-    setSummary(items.reduce(function (s, i) { return s + i.price * i.qty; }, 0));
-}
-
-function setSummary(sub) {
-    var delivery = sub > 0 ? 2.50 : 0;
-    var service = sub > 0 ? 1.00 : 0;
-    var tot = sub + delivery + service;
-    
-    const subEl = document.getElementById('summary-subtotal');
-    const totEl = document.getElementById('summary-total');
-    const checkEl = document.getElementById('checkout-total');
-    
-    if (subEl) subEl.textContent = '₾' + sub.toFixed(2);
-    if (totEl) totEl.textContent = '₾' + tot.toFixed(2);
-    if (checkEl) checkEl.textContent = '₾' + tot.toFixed(2);
-}
-
-function clearCart() {
-    cart = {};
-    badge();
-    renderCart();
 }
