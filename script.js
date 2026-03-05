@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxX4VFpGCdJfJu5TQc35uxgjxGlWWXf0A15R652E9VUBR8DbuS8Ocgy8IajAyiXRoIc/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyh_myHSe9U7eGajscj8r-nFxiajxz0bCSxoQ0Um0judDxpZ8I-FNmrQBQpZqMYBfjG/exec';
 
 var dishes = []; 
 var menu = [];   
