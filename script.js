@@ -352,9 +352,9 @@ async function submitFinalOrder(event) {
             return;
         }
 
-        const itemsList = encodeURIComponent(Object.values(cart)
-            .map(item => `${item.name} (x${item.qty})`)
-            .join(', '));
+const itemsList = encodeURIComponent(Object.values(cart)
+    .map(item => `${item.name} (x${item.qty})`)
+    .join(', '));
 
         // შენი SCRIPT URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJP-w1dceZ-SPLDtlWixBl5nNZu5u0W92z3MQEHGh8Lu85qPAIHbJQTfi8gU98A_aP/exec";
