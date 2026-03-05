@@ -5,7 +5,7 @@ if (tg) {
     tg.ready();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-RVHYUxokmKU_xGsfOwk3TWkQwgA0pW2sYeH3_aOz5jjQJyany1b8FZm-3WcKLf-4/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyS_86MK4YeOhtvIaDK5JGfYCK32bJqGC2Vsny0UFMaCVFZedEqQPdXZQTm-dxc-6uX/exec';
 
 var dishes = []; 
 var menu = [];   
@@ -196,66 +196,82 @@ function updateFinalCheckoutPrice() {
 }
 
 async function submitFinalOrder(event) {
-    // 1. ელემენტების მოძებნა
+    // 1. ელემენტების ამოღება
     const nameInput = document.getElementById('checkout-name');
     const phoneInput = document.getElementById('checkout-phone');
+    const cityInput = document.getElementById('checkout-city');
+    const streetInput = document.getElementById('checkout-street');
+    const aptInput = document.getElementById('checkout-apt');
+    const floorInput = document.getElementById('checkout-floor');
+    const entInput = document.getElementById('checkout-ent');
+    const promoInput = document.getElementById('promo-input');
+    const payMethodInput = document.querySelector('input[name="payment-method"]:checked');
+    
+    // ფასის ელემენტები
     const finalPriceElem = document.getElementById('final-total-price');
     const summaryPriceElem = document.getElementById('summary-total');
 
-    // 2. მონაცემების ამოღება და ვალიდაცია
+    // 2. ვალიდაცია
     const name = nameInput ? nameInput.value.trim() : "";
     const phone = phoneInput ? phoneInput.value.trim() : "";
     
     if (!name || !phone) {
-        alert("გთხოვთ შეავსოთ სახელი და ტელეფონის ნომერი!");
+        alert("გთხოვთ შეავსოთ სახელი და ნომერი!");
         return;
     }
 
-    // 3. ფასის ამოღების ლოგიკა (Fallback-ით)
+    // 3. ფასის და პროდუქტების მომზადება
     let rawPrice = "0";
     if (finalPriceElem && finalPriceElem.textContent.includes('₾')) {
         rawPrice = finalPriceElem.textContent;
     } else if (summaryPriceElem) {
         rawPrice = summaryPriceElem.textContent;
     }
-
-    // მხოლოდ ციფრების და წერტილის დატოვება
     const totalAmount = rawPrice.replace(/[^0-9.]/g, '').trim();
-    
-    if (parseFloat(totalAmount) <= 0 || isNaN(parseFloat(totalAmount))) {
-        alert("კალათა ცარიელია ან თანხა არასწორია!");
-        return;
-    }
 
-    // 4. ღილაკის ვიზუალური მართვა (დაბლოკვა)
-    const confirmBtn = event.target; 
+    // კალათის ნივთების ფორმირება ტექსტად (მაგ: პიცა x2, კოკა-კოლა x1)
+    // ვვარაუდობ რომ კალათის მასივს ჰქვია 'cart'
+    const itemsSummary = typeof cart !== 'undefined' 
+        ? cart.map(item => `${item.name}${item.size ? ' ('+item.size+')' : ''} x${item.quantity}`).join(', ')
+        : "No items info";
+
+    // 4. ღილაკის დაბლოკვა
+    const confirmBtn = event.target;
     const originalText = confirmBtn.textContent;
     confirmBtn.disabled = true;
-    confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
     confirmBtn.textContent = "მუშავდება...";
 
+    // 5. URL-ის აწყობა ყველა პარამეტრით
+    const params = new URLSearchParams({
+        action: 'payment',
+        amount: totalAmount,
+        customerName: name,
+        phone: phone,
+        town: cityInput ? cityInput.value : "",
+        address: streetInput ? streetInput.value : "",
+        bina: aptInput ? aptInput.value : "",
+        sartuli: floorInput ? floorInput.value : "",
+        sadarbazo: entInput ? entInput.value : "",
+        promo: promoInput ? promoInput.value : "None",
+        method: payMethodInput ? payMethodInput.value : "card",
+        items: itemsSummary,
+        userId: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "Guest"
+    });
+
     try {
-        // 5. მოთხოვნა სერვერზე (გადახდის ლინკის მისაღებად)
-        // დარწმუნდი, რომ SCRIPT_URL განსაზღვრული გაქვს ფაილის დასაწყისში
-        const response = await fetch(`${SCRIPT_URL}?action=payment&amount=${totalAmount}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`);
-        
-        if (!response.ok) throw new Error("სერვერმა დააბრუნა შეცდომა");
-        
+        const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
         const data = await response.json();
 
         if (data.payment_url) {
-            // გადამისამართება ბანკის გვერდზე
+            // თუ ყველაფერი კარგადაა, გადავიდეს გადახდაზე
             window.location.href = data.payment_url;
         } else {
-            throw new Error(data.error || "გადახდის ლინკი ვერ შეიქმნა");
+            throw new Error(data.error || "შეცდომა გადახდისას");
         }
     } catch (error) {
         console.error("Order Error:", error);
-        alert("შეცდომა: " + error.message);
-        
-        // შეცდომის შემთხვევაში ღილაკის უკან დაბრუნება
+        alert("ვერ მოხერხდა შეკვეთის გაგზავნა: " + error.message);
         confirmBtn.disabled = false;
-        confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         confirmBtn.textContent = originalText;
     }
 }
