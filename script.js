@@ -336,10 +336,10 @@ async function submitFinalOrder(event) {
         const city = document.getElementById('checkout-city').value;
         const street = document.getElementById('checkout-street').value.trim();
         
-        // ველების წამოღება შენი index.html-ის ID-ების მიხედვით
+        // ID-ები აღებულია შენი HTML-დან (apt, floor, entrance)
         const apt = document.getElementById('apt')?.value.trim() || '';
         const floor = document.getElementById('floor')?.value.trim() || '';
-        const entrance = document.getElementById('entrance')?.value.trim() || '';
+        const ent = document.getElementById('entrance')?.value.trim() || '';
         const promo = document.getElementById('promo-input')?.value.trim() || '';
         
         const totalText = document.getElementById('final-total-price')?.textContent || '0';
@@ -356,48 +356,55 @@ async function submitFinalOrder(event) {
             .map(item => `${item.name} (x${item.qty})`)
             .join(', ');
 
-        // მონაცემები, რომელიც იგზავნება Google Sheets-ში
+        // მონაცემები, რომელიც Google Script-ის doPost-ს სჭირდება
         const orderData = {
             customerName: name,
             phone: phone,
             city: city,
             street: street,
-            house: apt,       // აქ ჩაჯდა ბინის ნომერი (apt)
-            floor: floor,     // სართული
-            entrance: entrance, // სადარბაზო
-            promo: promo,
+            house: apt,       // აქ იგზავნება როგორც 'house'
+            floor: floor,     // აქ იგზავნება როგორც 'floor'
+            entrance: ent,     // აქ იგზავნება როგორც 'entrance'
             items: itemsList,
             total: total,
-            method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash'
+            promo: promo,
+            method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash',
+            userId: "Web_User"
         };
 
-const response = await fetch(SCRIPT_URL, {
+        // შენი გამოგზავნილი SCRIPT_URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMCw6W9OhLAxewue_fQWxfR5zuwJ_SIOHNudkDpuImGakpWoH9KXGHzblvCOevDKYc/exec";
+
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            // mode: 'no-cors', <-- ეს დააკომენტარე დროებით
+            mode: 'no-cors', // Google Apps Script-ისთვის აუცილებელია no-cors
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
         });
-        console.log("Response status:", response.status);
 
+        // რადგან no-cors ვიყენებთ, response.ok ყოველთვის false იქნება, 
+        // ამიტომ პირდაპირ ვაგრძელებთ წარმატების ლოგიკას
         const newOrder = {
             id: Math.floor(Math.random() * 10000),
             timestamp: new Date().toLocaleTimeString(),
             items: Object.values(cart),
             total: total + ' ₾',
-            address: currentOrderMethod === 'delivery' ? `${street}, ბინა: ${apt}, სართ: ${floor}` : 'წაღება',
+            address: currentOrderMethod === 'delivery' ? `${street}, ბინა ${apt}` : 'წაღება',
             status: 'pending'
         };
         
-        myOrders.unshift(newOrder);
-        if (typeof renderOrders === "function") renderOrders();
+        if (typeof myOrders !== 'undefined') {
+            myOrders.unshift(newOrder);
+            renderOrders();
+        }
 
         alert("მადლობა! შეკვეთა წარმატებით გაიგზავნა.");
-        
         if (typeof clearCart === "function") clearCart();
         showView('home');
 
     } catch (error) {
         console.error("Error submitting order:", error);
-        alert("დაფიქსირდა შეცდომა.");
+        alert("დაფიქსირდა შეცდომა გაგზავნისას.");
     } finally {
         btn.disabled = false;
         btn.textContent = originalText;
