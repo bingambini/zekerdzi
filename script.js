@@ -371,12 +371,12 @@ async function submitFinalOrder(event) {
             method: document.querySelector('input[name="payment-method"]:checked')?.value || 'cash'
         };
 
-        await fetch(SCRIPT_URL, {
+const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            // mode: 'no-cors', <-- ეს დააკომენტარე დროებით
             body: JSON.stringify(orderData)
         });
+        console.log("Response status:", response.status);
 
         const newOrder = {
             id: Math.floor(Math.random() * 10000),
