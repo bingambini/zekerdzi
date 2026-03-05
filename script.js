@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZEVIrmGh8V7SmeFp_q7LeTUmTByCNDI_5qG9OSi5zLl4aeFtLCHIwri8votFLPIOf/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-RVHYUxokmKU_xGsfOwk3TWkQwgA0pW2sYeH3_aOz5jjQJyany1b8FZm-3WcKLf-4/exec';
 
 var dishes = []; 
 var menu = [];   
