@@ -246,18 +246,20 @@ function handleMethodSelection(method) {
 }
 
 function togglePromoField() {
-    const container = document.getElementById('promo-collapsible');
-    const icon = document.getElementById('promo-plus-icon');
-    if (!container) return;
-    
-    if (container.style.maxHeight) {
-        container.style.maxHeight = null;
-        if(icon) icon.textContent = '⊕';
-    } else {
-        container.style.maxHeight = container.scrollHeight + "px";
-        if(icon) icon.textContent = '⊖';
-    }
-}
+            const container = document.getElementById('promo-collapsible');
+            const icon = document.getElementById('promo-plus-icon');
+            const btn = document.getElementById('promo-btn-toggle');
+            
+            if (container.style.maxHeight === '0px' || container.style.maxHeight === '') {
+                container.style.maxHeight = '100px';
+                icon.textContent = '⊖';
+                btn.classList.replace('text-[#1D6FE8]', 'text-[#888]');
+            } else {
+                container.style.maxHeight = '0px';
+                icon.textContent = '⊕';
+                btn.classList.replace('text-[#888]', 'text-[#1D6FE8]');
+            }
+        }
 
 function applyPromoCode() {
     const input = document.getElementById('promo-input');
