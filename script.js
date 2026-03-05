@@ -40,28 +40,28 @@ function renderOrders() {
     myOrders.forEach(order => {
         const isDelivered = order.status === 'delivered';
         const card = `
-            <div class="bg-white rounded-[28px] p-5 shadow-sm border border-[#F0F0F0] mb-4 transition-all duration-500">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span class="text-[10px] font-black uppercase tracking-widest ${isDelivered ? 'text-[#888]' : 'text-[#1D6FE8]'} flex items-center gap-1.5">
-                            ${isDelivered ? '✅ ჩაბარდა' : `
-                                <span class="relative flex h-2 w-2">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1D6FE8] opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#1D6FE8]"></span>
-                                </span>
-                                მზადდება
-                            `}
-                        </span>
-                        <h4 class="text-lg font-display font-bold text-[#0D0D0D] mt-1">Order #${order.id}</h4>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-[#AAA] font-bold uppercase tracking-tighter">${order.timestamp}</p>
-                        <p class="text-sm font-bold ${isDelivered ? 'text-[#888]' : 'text-[#1D6FE8]'} mt-1">${order.total}</p>
-                    </div>
+            <div class="bg-white rounded-[24px] p-5 shadow-sm border border-[#F0F0F0] mb-4 transition-all duration-500">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="relative flex h-2 w-2">
+                        ${isDelivered ? '' : '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1D6FE8] opacity-75"></span>'}
+                        <span class="relative inline-flex rounded-full h-2 w-2 ${isDelivered ? 'bg-gray-400' : 'bg-[#1D6FE8]'}"></span>
+                    </span>
+                    <span class="text-[11px] font-bold ${isDelivered ? 'text-gray-500' : 'text-[#1D6FE8]'} uppercase tracking-tighter">
+                        თქვენი შეკვეთის სტატუსი: ${isDelivered ? 'ჩაბარებულია' : 'მზადდება'}
+                    </span>
                 </div>
-                <button class="w-full ${isDelivered ? 'bg-[#F5F3EF] text-[#0D0D0D]' : 'bg-[#0D0D0D] text-white'} py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest active:scale-[0.98] transition-all">
-                    ${isDelivered ? 'თავიდან შეკვეთა' : 'დეტალები / თრექინგი'}
-                </button>
+
+                <div class="flex justify-between items-center mb-5">
+                    <h4 class="text-lg font-black text-[#0D0D0D]">Order #${order.id}</h4>
+                    <span class="text-lg font-black text-[#1D6FE8]">${order.total}</span>
+                </div>
+
+                <div class="flex justify-start">
+                    <button onclick="showReceipt(${order.id})" 
+                            class="bg-[#0D0D0D] text-white px-8 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] active:scale-95 transition-all shadow-lg shadow-black/10">
+                        დეტალურად
+                    </button>
+                </div>
             </div>
         `;
 
@@ -75,6 +75,69 @@ function renderOrders() {
     });
 
     container.innerHTML = (hasCurrent ? currentHTML : '') + (hasPast ? pastHTML : '');
+}
+
+// რესტორნის ჩეკის (Receipt) ვიზუალიზაცია
+function showReceipt(orderId) {
+    const order = myOrders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'receipt-modal';
+    overlay.className = 'fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-6 backdrop-blur-sm transition-opacity duration-300';
+    
+    const itemsHtml = order.items.map(item => `
+        <div class="flex justify-between mb-1">
+            <span class="flex-1">${item.qty} x ${item.name}</span>
+            <span class="ml-2">₾${(item.price * item.qty).toFixed(2)}</span>
+        </div>
+    `).join('');
+
+    overlay.innerHTML = `
+        <div class="bg-white w-full max-w-[340px] p-8 shadow-2xl relative transition-transform duration-300 transform scale-100" 
+             style="font-family: 'Courier New', Courier, monospace; border-radius: 2px; color: #1a1a1a;">
+            
+            <div class="text-center border-b-2 border-dashed border-gray-300 pb-4 mb-4">
+                <h2 class="font-black text-xl italic uppercase tracking-tighter">RECEIPT / ჩეკი</h2>
+                <p class="text-[10px] mt-2">ID: #${order.id}</p>
+                <p class="text-[10px] uppercase">${order.timestamp} | ${new Date().toLocaleDateString()}</p>
+            </div>
+
+            <div class="text-[11px] mb-4 space-y-1">
+                <p class="font-bold uppercase underline">მიწოდების მისამართი:</p>
+                <p class="leading-tight">${order.address || 'მისამართი არ არის'}</p>
+            </div>
+
+            <div class="border-b border-dashed border-gray-300 mb-4"></div>
+
+            <div class="text-[12px] mb-4">
+                ${itemsHtml}
+            </div>
+
+            <div class="border-b-2 border-dashed border-gray-300 mb-4"></div>
+
+            <div class="flex justify-between font-black text-lg mb-6 uppercase">
+                <span>TOTAL / ჯამი:</span>
+                <span>${order.total}</span>
+            </div>
+
+            <div class="text-center text-[10px] mb-8 italic">
+                <p>გმადლობთ შეკვეთისთვის!</p>
+                <p class="mt-1 font-bold uppercase tracking-widest">Enjoy your meal!</p>
+            </div>
+
+            <button onclick="document.getElementById('receipt-modal').remove()" 
+                    class="w-full bg-[#0D0D0D] text-white py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors">
+                დახურვა
+            </button>
+
+            <div class="absolute -bottom-2 left-0 right-0 h-2 flex overflow-hidden">
+                ${Array(12).fill('<div class="min-w-[30px] h-4 bg-white rotate-45 -mt-2 shadow-sm border border-gray-100"></div>').join('')}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
 }
 
 function updateOrderStatus(orderId, newStatus) {
@@ -262,6 +325,7 @@ function submitFinalOrder(event) {
     const btn = event.currentTarget;
     const originalText = btn.innerHTML;
     const finalTotal = document.getElementById('final-total-price').textContent;
+    const addressInput = document.querySelector('input[placeholder*="ქუჩა"]');
     
     btn.disabled = true;
     btn.innerHTML = `
@@ -275,22 +339,20 @@ function submitFinalOrder(event) {
     `;
 
     setTimeout(() => {
-        // 1. ახალი ორდერის ობიექტის შექმნა
         const orderId = Math.floor(1000 + Math.random() * 9000);
         const newOrder = {
             id: orderId,
             total: finalTotal,
             status: 'preparing',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            items: Object.values(cart), // ვინახავთ პროდუქტების სიას ჩეკისთვის
+            address: addressInput ? addressInput.value : "თვითგატანა"
         };
 
-        myOrders.unshift(newOrder); // ვამატებთ სიის დასაწყისში
+        myOrders.unshift(newOrder);
         renderOrders();
         
-        // 2. კალათის გასუფთავება
         if (typeof clearCart === "function") clearCart();
-
-        // 3. გადაყვანა "Orders" ტაბზე
         showView('orders');
         
         btn.disabled = false;
@@ -300,12 +362,11 @@ function submitFinalOrder(event) {
             window.Telegram.WebApp.showAlert("შეკვეთა წარმატებით გაფორმდა!");
         }
 
-        // 4. სტატუსის ავტომატური შეცვლა სიმულაციისთვის (მაგ. 10 წამში)
         setTimeout(() => {
             updateOrderStatus(orderId, 'delivered');
-        }, 10000);
+        }, 15000);
 
-    }, 2500);
+    }, 2000);
 }
 
 function changeDetailQty(amount) {
