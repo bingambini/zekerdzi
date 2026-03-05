@@ -439,89 +439,65 @@ function showReceipt(orderId) {
 }
 
 // --- 7. Checkout და Google Sheets ინტეგრაცია ---
+
 async function submitFinalOrder(event) {
     if (event) event.preventDefault();
     
     const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value;
     const total = document.getElementById('final-total-price')?.textContent.replace('₾', '').trim() || '0';
+    const btn = event.target;
 
-    // 1. ჯერ ვინახავთ შეკვეთის მონაცემებს დროებით (Pending სტატუსით)
-    // 2. თუ ბარათია, გადავდივართ ბანკის გვერდზე
+    // ღილაკის ანიმაცია პროცესის დროს
+    const originalBtnText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-pulse">ბანკთან კავშირი...</span>';
+
     if (paymentMethod === 'card') {
-        goToBankPage(total);
+        try {
+            // ვიყენებთ უკვე არსებულ SCRIPT_URL-ს გადახდის ინიციალიზაციისთვის
+            const response = await fetch(`${SCRIPT_URL}?action=CREATE_PAYMENT&amount=${total}`);
+            const data = await response.json();
+
+            if (data.success && data.hpp_url) {
+                // მომხმარებლის გადაყვანა ბანკის ნამდვილ სატესტო გვერდზე
+                window.location.href = data.hpp_url;
+            } else {
+                throw new Error(data.error || "გადახდა ვერ დაიწყო");
+            }
+        } catch (error) {
+            console.error("BOG Error:", error);
+            alert("ბანკთან დაკავშირება ვერ მოხერხდა.");
+            btn.disabled = false;
+            btn.innerHTML = originalBtnText;
+        }
     } else {
-        // თუ ნაღდი ფულია, პირდაპირ ვასრულებთ
+        // ნაღდი ანგარიშსწორება
         processOrderInDatabase('CASH_PENDING');
     }
 }
 
-function goToBankPage(amount) {
-    // რეალურ API-ში აქ ხდება POST მოთხოვნა Access Token-ით 
-    // და ბანკი გვიბრუნებს გადახდის ბმულს.
-    // ჩვენს სატესტო ვერსიაში "გადავიყვანოთ" მომხმარებელი ვიზუალურ სიმულაციაზე:
+async function processOrderInDatabase(status = 'Pending') {
+    const name = document.getElementById('checkout-name').value;
+    const phone = document.getElementById('checkout-phone').value;
+    const itemsDescription = cart.map(item => `${item.name} (${item.quantity}x)`).join(', ');
 
-    const appContainer = document.getElementById('app');
-    appContainer.classList.add('blur-sm', 'pointer-events-none'); // აპლიკაციის დაფარვა
+    const params = new URLSearchParams({
+        customerName: name,
+        phone: phone,
+        items: itemsDescription,
+        total: document.getElementById('final-total-price').textContent,
+        method: status,
+        action: 'SAVE_ORDER'
+    });
 
-    // ვქმნით სრულეკრანიან "ბანკის გვერდს"
-    const bankPage = document.createElement('div');
-    bankPage.id = 'external-bank-page';
-    bankPage.className = 'fixed inset-0 bg-[#F4F4F4] z-[300] flex flex-col';
-    
-    bankPage.innerHTML = `
-        <div class="bg-white p-4 shadow-sm flex items-center justify-between">
-            <img src="https://bankofgeorgia.ge/img/logo.svg" style="height: 24px;">
-            <div class="text-[10px] font-bold text-gray-400">SECURE CHECKOUT</div>
-        </div>
-        
-        <div class="p-6 mt-10 max-w-sm mx-auto w-full">
-            <div class="bg-white rounded-3xl p-8 shadow-xl shadow-black/5">
-                <p class="text-center text-gray-400 text-xs mb-2 font-bold uppercase">Order Payment</p>
-                <h1 class="text-center text-3xl font-black mb-10">₾${amount}</h1>
-                
-                <div class="space-y-6">
-                    <input type="text" placeholder="Card Number" class="w-full border-b-2 py-2 outline-none focus:border-orange-500">
-                    <div class="flex gap-4">
-                        <input type="text" placeholder="MM/YY" class="w-full border-b-2 py-2 outline-none focus:border-orange-500">
-                        <input type="password" placeholder="CVV" class="w-full border-b-2 py-2 outline-none focus:border-orange-500">
-                    </div>
-                </div>
-
-                <button onclick="completeBankTransaction()" 
-                    class="w-full bg-[#FF5E00] text-white py-4 rounded-2xl font-bold mt-10 active:scale-95 transition-all">
-                    PAY NOW
-                </button>
-            </div>
-            
-            <button onclick="cancelBankTransaction()" class="w-full mt-6 text-gray-400 text-sm font-medium">
-                Cancel and return to store
-            </button>
-        </div>
-    `;
-    document.body.appendChild(bankPage);
-}
-
-function completeBankTransaction() {
-    const btn = document.querySelector('#external-bank-page button');
-    btn.innerHTML = '<span class="animate-spin inline-block mr-2">↻</span> Processing...';
-    btn.disabled = true;
-
-    // სიმულაცია: ბანკი ამუშავებს ტრანზაქციას 2 წამი
-    setTimeout(() => {
-        // გადახდა წარმატებულია! ვაბრუნებთ მომხმარებელს აპლიკაციაში
-        document.getElementById('external-bank-page').remove();
-        document.getElementById('app').classList.remove('blur-sm', 'pointer-events-none');
-        
-        // ვასრულებთ შეკვეთას ბაზაში
-        processOrderInDatabase('CARD_PAID');
-    }, 2000);
-}
-
-function cancelBankTransaction() {
-    if(confirm("ნამდვილად გსურთ გადახდის გაუქმება?")) {
-        document.getElementById('external-bank-page').remove();
-        document.getElementById('app').classList.remove('blur-sm', 'pointer-events-none');
-        alert("გადახდა გაუქმებულია.");
+    try {
+        // აქაც ვიყენებთ გლობალურ SCRIPT_URL-ს
+        await fetch(`${SCRIPT_URL}?${params.toString()}`, { method: 'POST' });
+        alert("შეკვეთა მიღებულია!");
+        clearCart();
+        showView('home');
+    } catch (e) {
+        alert("შეკვეთა ვერ შეინახა.");
     }
 }
 
